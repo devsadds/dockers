@@ -1,9 +1,26 @@
 #!/bin/bash
 
-docker_root="/mnt/hdd/docker"
-docker_dns="10.28.0.1"
-docker_default_address_pools_base="172.22.0.0/16"
-docker_default_address_pools_size=24
+for i in "$@"
+do
+case $i in
+    --docker_dns=*) ##
+    DOCKER_DNS="${i#*=}"
+    shift # past argument=value
+    ;;
+    --default)
+    DEFAULT=YES
+    shift # past argument with no value
+    ;;
+    *)
+          # unknown option
+    ;;
+esac
+done
+
+
+docker_root=$(docker info | grep 'Docker Root Dir' | awk '{ print $NF }')
+docker_default_address_pools_base=$(docker info  | grep -A 1 'Default Address Pools' | grep Base | awk '{print $2}' | cut -d\, -f1)
+docker_default_address_pools_size=$(docker info  | grep -A 1 'Default Address Pools' | grep Base | awk '{print $NF}')
 
 system_prepare(){
 	apt-get install nftables -y
@@ -56,12 +73,12 @@ docker_config(){
 	fi
 	tee /etc/docker/daemon.json << EOF
 {
-  "data-root": "${docker_root}",
+  "data-root": "${docker_root:-/var/lib/docker}",
   "default-shm-size": "128M",
   "metrics-addr": "127.0.0.1:9323",
   "experimental": true,
   "iptables": false,
-  "dns": ["${docker_dns}"],
+  "dns": ["${DOCKER_DNS:-8.8.8.8}"],
   "mtu": 1450,
   "default-address-pools":
   [
