@@ -1,0 +1,16 @@
+version: '2'
+services:
+  openvpn:
+    image: "registry.gitlab.com/devops_containers/dockers/openvpn:2.5.0-alpine"
+    volumes:
+      - "./configs/openvpn:/etc/openvpn"
+    container_name: openvpn
+    hostname: vpnoffice.itc-life.ru
+    ports:
+     - "1194:1194/udp"
+    restart: always
+    cap_add:
+     - NET_ADMIN
+    environment:
+     OVPN_SERVER_URL: "udp://vpnoffice.itc-life.ru:1194"
+     OVPN_PORT: "1194"

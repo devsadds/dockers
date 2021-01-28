@@ -1,0 +1,10 @@
+version: '3.5'
+services:
+  openvpn:
+    image: "registry.gitlab.com/devops_containers/dockers/openvpn:2.5.0-alpine"
+    build: 
+      context: build/openvpn/.
+      args:
+        APP_VERSION: "2.5.0-r1"
+        BASE_IMAGE: "alpine:edge"
+        BUILD_DATE: "$BUILD_DATE"
