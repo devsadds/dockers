@@ -1,0 +1,9 @@
+version: '2'
+services:
+  prometheus_bot:
+    image: "registry.gitlab.com/devops_containers/dockers/prometheus_bot:1.2.0"
+    container_name: prometheus_bot
+    build: 
+      context: build/prometheus_bot/.
+      args:
+        IMAGE_TAG: ""
