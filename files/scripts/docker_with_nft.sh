@@ -171,9 +171,14 @@ table ip nat {
 
 EOF
 
-	
-	nft -f /etc/nftable.d/nftables-docker-default.conf
+	if [ ! -f /etc/nftable.d/nft-system-current.conf ] ;then
+		nft -f /etc/nftable.d/nftables-docker-default.conf
+	else
+		nft -f /etc/nftable.d/nft-system-current.conf
+	fi
+
 	systemctl start docker containerd
+
 }
 
 
