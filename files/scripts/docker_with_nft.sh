@@ -28,6 +28,31 @@ system_prepare(){
 
 }
 
+
+nfr_remove(){
+	apt-get remove nftables iptables-nftables-compat -y || apt-get remove nftables -y
+
+
+cat <<EOF> /etc/docker/daemon.json
+{
+  "data-root": "${docker_root:-/var/lib/docker}",
+  "default-shm-size": "128M",
+  "metrics-addr": "127.0.0.1:9323",
+  "experimental": true,
+  "dns": ["${DOCKER_DNS:-8.8.8.8}"],
+  "mtu": 1450,
+  "default-address-pools":
+  [
+    {
+     "base": "${docker_default_address_pools_base}",
+     "size": ${docker_default_address_pools_size}
+    }
+  ]
+
+}
+EOF
+}
+
 docker_stop(){
 	systemctl stop docker containerd
 
