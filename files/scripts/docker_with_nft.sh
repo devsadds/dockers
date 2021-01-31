@@ -1,5 +1,5 @@
 #!/bin/bash
-
+#curl -qs https://gitlab.com/devops_containers/dockers/-/raw/master/files/scripts/docker_with_nft.sh -o /tmp/docker_with_nft.sh && sudo bash /tmp/docker_with_nft.sh
 for i in "$@"
 do
 case $i in
@@ -23,8 +23,9 @@ docker_default_address_pools_base=$(docker info  | grep -A 1 'Default Address Po
 docker_default_address_pools_size=$(docker info  | grep -A 1 'Default Address Pools' | grep Base | awk '{print $NF}')
 
 system_prepare(){
-	apt-get install nftables -y
+	apt-get install nftables iptables-nftables-compat -y || apt-get install nftables -y
 	systemctl --now enable nftables
+
 }
 
 docker_stop(){
@@ -168,7 +169,7 @@ table ip nat {
 
 EOF
 
-	#curl -qs https://gitlab.com/devops_containers/dockers/-/raw/master/files/scripts/docker_with_nft.sh -o /tmp/docker_with_nft.sh && sudo bash /tmp/docker_with_nft.sh
+	
 	nft -f /etc/nftable.d/nftables-docker-default.conf
 	systemctl start docker containerd
 }
@@ -184,6 +185,21 @@ nft_rules_additional(){
 	
 	#remove
 	nft delete rule filter INPUT handle 19
+
+
+nft add map firewall mydict { type ipv4_addr : verdict\; }
+nft add element firewall mydict { 192.168.122.1 : drop, 192.168.0.11 : accept }
+nft add rule firewall input ip saddr vmap @mydict
+
+nft add rule filter INPUT ip saddr 10.0.0.0/8 tcp dport 80 accept
+nft add rule filter INPUT ip saddr 172.16.0.0/16 tcp dport 80 accept
+nft add rule filter INPUT ip saddr 127.0.0.1/32 tcp dport 80 accept
+nft add rule filter INPUT ip saddr 192.168.122.1/32 tcp dport 80 accept
+nft add rule filter INPUT tcp dport 80 drop
+
+
+
+
 }
 
 
@@ -207,8 +223,8 @@ finish_stage(){
 
 main(){
 	system_prepare
-	docker_stop
 	nftables_prepare
+	docker_stop
 	docker_config
 	docker_nft_tables
 	docker_aliases_nft_edit
