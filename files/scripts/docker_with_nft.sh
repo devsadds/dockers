@@ -72,7 +72,7 @@ docker_config(){
 	if [[ ! -d "/etc/docker" ]];then
 		mkdir -p /etc/docker
 	fi
-	tee /etc/docker/daemon.json << EOF
+	cat <<EOF> /etc/docker/daemon.json
 {
   "data-root": "${docker_root:-/var/lib/docker}",
   "default-shm-size": "128M",
@@ -93,7 +93,7 @@ docker_config(){
 EOF
 
 
-	tee /etc/systemd/system/docker.service.d/exec-start.conf << EOF
+	cat <<EOF> /etc/systemd/system/docker.service.d/exec-start.conf
 [Service]
 ExecStart=
 ExecStart=/usr/bin/dockerd 
@@ -105,7 +105,7 @@ EOF
 
 docker_nft_tables(){
 
-	tee /etc/nftable.d/nftables-docker-default.conf << EOF
+	cat <<EOF> /etc/nftable.d/nftables-docker-default.conf
 table ip filter {
 	chain INPUT {
 		type filter hook input priority 0; policy accept;
