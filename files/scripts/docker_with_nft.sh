@@ -72,7 +72,7 @@ docker_config(){
 	if [[ ! -d "/etc/docker" ]];then
 		mkdir -p /etc/docker
 	fi
-	cat <<EOF> /etc/docker/daemon.json
+cat <<EOF> /etc/docker/daemon.json
 {
   "data-root": "${docker_root:-/var/lib/docker}",
   "default-shm-size": "128M",
@@ -92,8 +92,10 @@ docker_config(){
 }
 EOF
 
-
-	cat <<EOF> /etc/systemd/system/docker.service.d/exec-start.conf
+if [ ! -d "/etc/systemd/system/docker.service.d" ];then
+	mkdir -p /etc/systemd/system/docker.service.d
+fi
+cat <<EOF> /etc/systemd/system/docker.service.d/exec-start.conf
 [Service]
 ExecStart=
 ExecStart=/usr/bin/dockerd 
