@@ -4,7 +4,7 @@ services:
     image: ${DOCKER_IMAGE_CONSUL}
     hostname: "server-{{.Node.Hostname}}"
     networks:
-      pxc_percona_net:
+      ${DOCKER_NETWORK_NAME}:
         aliases:
           - pxc.service.consul
           - consul.server
@@ -32,7 +32,7 @@ services:
     image: ${DOCKER_IMAGE_CONSUL}
     hostname: "server-bootstrap-{{.Node.Hostname}}"
     networks:
-      pxc_percona_net:
+      ${DOCKER_NETWORK_NAME}:
     ports:
       - 8500:8500
     volumes:
@@ -52,7 +52,7 @@ services:
         constraints: [ node.labels.consul == true ]
 
 networks:
-  pxc_percona_net:
+  ${DOCKER_NETWORK_NAME}:
     external: true
     driver: overlay
 
