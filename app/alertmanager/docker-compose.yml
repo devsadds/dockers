@@ -1,0 +1,10 @@
+version: '2'
+services:
+  alertmanager:
+    image: registry.gitlab.com/devops_containers/dockers:0.21.0
+    build: 
+      context: build/alertmanager/.
+      args:
+        IMAGE_TAG: "prom/alertmanager:v0.21.0"
+    #entrypoint: tail -f /dev/null
+    container_name: alertmanager

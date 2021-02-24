@@ -1,0 +1,61 @@
+version: '3.6'
+services:
+  server:
+    image: ${DOCKER_IMAGE_CONSUL}
+    hostname: "server-{{.Node.Hostname}}"
+    networks:
+      pxc_percona_net:
+        aliases:
+          - pxc.service.consul
+          - consul.server
+          - consul
+    ports:
+      - 8501:8500
+    volumes:
+      - consul-data-1:/consul/data
+    environment:
+      CONSUL_SERVER_NAME: "pxc.service.consul"
+      CONSUL_SERVER_NAME_ENCRYPT_TOKEN: ""
+      CONSUL_SERVER_LOG_LEVEL: "warn"
+      CONSUL_CLEANUP_DEAD_SERVERS: "true"
+      CONSUL_SERVER_DATACENTER: "dc1"
+      CONSUL_SERVER_INTERFACE_BIND: "eth1"
+      #
+      CONSUL_SERVER_NETWORK_REJOIN_HOST: "server-bootstrap"
+    deploy:
+      mode: global
+      placement:
+        constraints: [ node.labels.consul == true ]
+
+
+  server-bootstrap:
+    image: ${DOCKER_IMAGE_CONSUL}
+    hostname: "server-bootstrap-{{.Node.Hostname}}"
+    networks:
+      pxc_percona_net:
+    ports:
+      - 8500:8500
+    volumes:
+      - consul-server-bootstrap-1:/consul/data
+    environment:
+      CONSUL_SERVER_NAME: "server-bootstrap.service.consul"
+      CONSUL_SERVER_NAME_ENCRYPT_TOKEN: ""
+      CONSUL_SERVER_LOG_LEVEL: "warn"
+      CONSUL_CLEANUP_DEAD_SERVERS: "true"
+      CONSUL_SERVER_DATACENTER: "dc1"
+      CONSUL_SERVER_CLUSTER_SIZE: "3"
+      CONSUL_SERVER_INTERFACE_BIND: "eth1"
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints: [ node.labels.consul == true ]
+
+networks:
+  pxc_percona_net:
+    external: true
+    driver: overlay
+
+volumes:
+  consul-data-1:
+  consul-server-bootstrap-1:
