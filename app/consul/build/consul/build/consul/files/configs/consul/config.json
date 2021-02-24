@@ -1,0 +1,25 @@
+{ 
+  "advertise_addr" : "{{ GetInterfaceIP \"eth0\" }}",
+  "bind_addr": "{{ GetInterfaceIP \"eth0\" }}",
+  "bootstrap": true,
+  "server": true,
+  "skip_leave_on_interrupt": true,
+  "server_name" : "common.service.consul",
+  "acl_datacenter":"dc1",
+  "acl_default_policy":"allow",
+  "acl_down_policy":"extend-cache",
+  "datacenter":"dc1",
+  "data_dir":"/consul/data",
+  "ui" : true,
+  "addresses" : {
+    "http": "0.0.0.0",
+    "dns":  "0.0.0.0",
+    "https": "0.0.0.0",
+    "grpc": "0.0.0.0"
+  },
+  "ports" : {
+    "server": 8300,
+    "http": 8500,
+    "dns": 8600
+  }
+}
