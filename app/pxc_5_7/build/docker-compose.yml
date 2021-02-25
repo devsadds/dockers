@@ -1,0 +1,10 @@
+version: '2'
+services:
+  pxc:
+    image: devsadds/pxc:5.7.32-35-57-consul-1.9.3-bionic-v2.4.0
+    build: 
+      context: build/pxc/.
+      args:
+        DOCKER_BASE_IMAGE: "ubuntu:bionic"
+        CONSUL_VERSION: "1.9.3"
+    container_name: pxc

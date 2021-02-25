@@ -1,0 +1,109 @@
+version: '3.8'
+
+services:
+  
+  ####consul:
+    ####image: "localregistry.linux2be.com:1443/devsadds/consul:1.8.4"
+    ####hostname: consul
+    ####networks:
+      ####pxc-net:
+        ####aliases:
+          ####- consulpxc.service.consul
+    ####ports:
+      ####- target: 8500
+        ####published: 8600
+        ####protocol: tcp
+        ####mode: host
+    ####deploy:
+      ####mode: replicated
+      ####replicas: 1
+      ####restart_policy:
+        ####condition: on-failure
+        ####delay: 15s
+        ####max_attempts: 13
+        ####window: 180s
+      ####update_config:
+        ####parallelism: 1
+        ####delay: 20s
+        ####failure_action: continue
+        ####monitor: 60s
+        ####max_failure_ratio: 0.3
+      ####placement:
+        ####constraints: [ node.labels.consul  == true ]
+  pxc-5-7:
+    image: localregistry.linux2be.com:1443/devsadds/pxc:5.7.31-34-57-consul-1.8.4-bionic-v2.1.5
+    hostname: pxc-5-7-{{.Node.Hostname}}-{{.Task.ID}}
+    environment:
+      CLUSTER_NAME: "pxc-cluster"
+      MYSQL_ROOT_PASSWORD: "root32456"
+      PXC_SERVICE: "pxc-5-7.service.consul"
+      DISCOVERY_SERVICE: "consulpxc.service.consul"
+      MYSQL_TUNE_BEFORE_START: "true"
+      XTRABACKUP_PASSWORD: "xtrabackuproot32456"
+      EXPORTER_PASSWORD: "3syvjKuA84pb6T8gcBF7t3VCkPfGVwq"
+      ###MYSQL TUNE
+      INNODB_LOG_FILES_IN_GROUP: "2"
+      INNODB_LOG_FILE_SIZE: "128M"
+      INNODBFLUSH_LOG_AT_TRX_COMMIT: "2"
+      INNODB_FILE_PER_TABLE: "1"
+      INNODB_BUFFER_POOL_SIZE: "2G"
+      INNODB_AUTOINC_LOCK_MODE: "2"
+      MAX_ALLOWED_PACKET: "128M"
+      MAX_CONNECT_ERRORS: "1000000"
+      MAX_CONNECTIONS: "300"
+      WSREP_SLAVE_THREADS: "2"
+      WAIT_TIMEOUT: "200"
+      TABLE_OPEN_CACHE: "4096"
+      MAX_HEAD_TABLE_SIZE: "64M"
+      TMP_TABLE_SIZE: "64M"
+      BINLOG_FOMAT: "ROW"
+      ###MYSQL REPLICATION MASTER
+      GTID_REPLICATION: "true"
+      REPLICATION_ROLE: "master"
+      EXPIRE_LOGS_DAYS: "10"
+      MAX_BINLOG_SIZE: "1000M"
+      INNODB_LOCKS_UNSAFE_FOR_BINLOG: "1"
+      #CLUSTER_JOIN: "ip_addr" #if join existing cluster
+    volumes:
+      - "pxc_5_7:/var/lib/mysql"
+      - "./backups:/var/backups_mysql:rw"
+      #- "./configs/entrypoints/:/entrypoints/:rw"
+    networks:
+      dev_dev-net:
+    #entrypoint: tail -f /dev/null
+    #entrypoint: ["/entrypoints/docker-entrypoint.sh"]
+    deploy:
+      mode: replicated
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+        delay: 15s
+        max_attempts: 1000
+        window: 180s
+      update_config:
+        parallelism: 1
+        delay: 20s
+        failure_action: continue
+        monitor: 60s
+        max_failure_ratio: 0.3
+      placement:
+        constraints: [ node.labels.pxc  == true ]
+
+
+volumes:
+  pxc_5_7:
+  #backups_mysql:
+
+networks:
+  dev_dev-net:
+    driver: overlay
+    external: true
+
+
+#innobackupex /backups_mysql/
+
+
+#docker node update --label-add consul=true node1
+#docker node update --label-add pxc=true node1
+#docker node update --label-add pxc=true node2
+#docker node update --label-add pxc=true node3

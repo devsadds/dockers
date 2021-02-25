@@ -1,0 +1,78 @@
+version: "3.8"
+
+x-logging:
+  &rsyslog-logging
+  driver: syslog
+  options:
+    syslog-address: "udp://127.0.0.1:515"
+
+x-logging-json:
+  &json-logging
+  driver: json-file
+  options:
+    max-size: '100m'
+    max-file: '5'
+
+x-deploy:
+  &haproxy-deploy
+  mode: global
+  #replicas: 1
+  restart_policy:
+    condition: on-failure
+    delay: 10s
+    max_attempts: 40
+    window: 10s
+  update_config:
+    parallelism: 1
+    delay: 5s
+    failure_action: rollback
+    monitor: 25s
+    max_failure_ratio: 0.3
+    order: stop-first
+  placement:
+    constraints: [ node.labels.haproxy  == true ]
+
+
+services:
+  haproxy:
+    image: devsadds/haproxy:2.2.3_consul-1.8.3_consul-template-0.25.1-v1.1.2
+    ports:
+      - target: 3306
+        published: 3306
+        protocol: tcp
+        mode: host
+      - target: 3307
+        published: 3307
+        protocol: tcp
+        mode: host
+      - target: 80
+        published: 33380
+        protocol: tcp
+        mode: host      
+    environment:
+        DOCKER_ROLE: "haproxy"
+        DISCOVERY_SERVICE: "consul"
+        DISCOVERY_SERVICE_HOST: "consul"
+        DISCOVERY_SERVICE_NAME: "pxc"
+        HAPROXY_STATS_URL: "/"
+        HAPROXY_STATS_AUTH_USER: "human"
+        HAPROXY_STATS_AUTH_PASSWORD: "sdsdsdFFFFFFFpasswordMYSmjgfdgkhl3hflgdfskgjuhgflsgklhjfsg"
+        HAPROXY_STATS_ALLOW_HOSTS: "192.168.56.0/24 10.0.0.0/8 172.0.0.0/8 127.0.0.1/32 135.181.42.164/32 95.216.175.179/32"
+        HAPROXY_SERVICE_ALLOW_HOSTS: "192.168.56.0/24 10.0.0.0/8 172.0.0.0/8 127.0.0.1/32 95.216.175.179/32"
+        SERVER_NAME: "haproxy"
+        HAPROXY_MYSQL_CHECK_USER: "hpclustercheckuser"
+    networks:
+      pxc_percona_net:
+    deploy:
+      <<: *haproxy-deploy
+
+
+networks:
+  pxc_percona_net:
+    external: true
+    driver: overlay
+
+
+#docker node update --label-add haproxy=true convy-oh-my-dev-manager-1 && docker node update --label-add haproxy=true convy-oh-my-dev-manager-2 && docker node update --label-add haproxy=true convy-oh-my-dev-manager-3
+#CREATE USER 'hpclustercheckuser'@'%' IDENTIFIED WITH mysql_native_password by '';GRANT PROCESS ON *.* TO 'hpclustercheckuser'@'%';
+#docker stack deploy -c docker-compose.yml haproxy
