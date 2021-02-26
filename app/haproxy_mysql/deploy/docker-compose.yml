@@ -17,6 +17,7 @@ x-deploy:
   &haproxy-deploy
   mode: global
   #replicas: 1
+  endpoint_mode: dnsrr
   restart_policy:
     condition: on-failure
     delay: 10s
@@ -30,12 +31,12 @@ x-deploy:
     max_failure_ratio: 0.3
     order: stop-first
   placement:
-    constraints: [ node.labels.haproxy  == true ]
+    constraints: [ node.labels.haproxy-mysql  == true ]
 
 
 services:
   haproxy:
-    image: devsadds/haproxy:2.2.3_consul-1.8.3_consul-template-0.25.1-v1.1.2
+    image: devsadds/haproxy-mysql:2.4-dev9_consul-1.9.3_consul-template-0.25.1-v1.3.0
     ports:
       - target: 3306
         published: 3306
@@ -49,18 +50,24 @@ services:
         published: 33380
         protocol: tcp
         mode: host      
+      - target: 19101
+        published: 19102
+        protocol: tcp
+        mode: host
     environment:
         DOCKER_ROLE: "haproxy"
         DISCOVERY_SERVICE: "consul"
         DISCOVERY_SERVICE_HOST: "consul"
         DISCOVERY_SERVICE_NAME: "pxc"
         HAPROXY_STATS_URL: "/"
-        HAPROXY_STATS_AUTH_USER: "human"
-        HAPROXY_STATS_AUTH_PASSWORD: "sdsdsdFFFFFFFpasswordMYSmjgfdgkhl3hflgdfskgjuhgflsgklhjfsg"
-        HAPROXY_STATS_ALLOW_HOSTS: "192.168.56.0/24 10.0.0.0/8 172.0.0.0/8 127.0.0.1/32 135.181.42.164/32 95.216.175.179/32"
-        HAPROXY_SERVICE_ALLOW_HOSTS: "192.168.56.0/24 10.0.0.0/8 172.0.0.0/8 127.0.0.1/32 95.216.175.179/32"
+        HAPROXY_STATS_AUTH_USER: "user"
+        HAPROXY_STATS_AUTH_PASSWORD: "password"
+        HAPROXY_STATS_ALLOW_HOSTS: "192.168.0.0/12 10.0.0.0/8 172.16.0.0/12 127.0.0.1/32"
+        HAPROXY_SERVICE_ALLOW_HOSTS: "192.168.0.0/12 10.0.0.0/8 172.16.0.0/12 127.0.0.1/32"
         SERVER_NAME: "haproxy"
         HAPROXY_MYSQL_CHECK_USER: "hpclustercheckuser"
+        HAPROXY_MYSQL_BACKEND_MAX_CONN: "200"
+        SERVER_INTERFACE_BIND: "ethwe0"
     networks:
       pxc_percona_net:
     deploy:
@@ -70,9 +77,6 @@ services:
 networks:
   pxc_percona_net:
     external: true
-    driver: overlay
-
-
-#docker node update --label-add haproxy=true convy-oh-my-dev-manager-1 && docker node update --label-add haproxy=true convy-oh-my-dev-manager-2 && docker node update --label-add haproxy=true convy-oh-my-dev-manager-3
-#CREATE USER 'hpclustercheckuser'@'%' IDENTIFIED WITH mysql_native_password by '';GRANT PROCESS ON *.* TO 'hpclustercheckuser'@'%';
-#docker stack deploy -c docker-compose.yml haproxy
+    driver: weaveworks/net-plugin:2.8.1
+    ipam:
+      driver: default
