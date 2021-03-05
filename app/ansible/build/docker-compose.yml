@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+
+  ansible:
+    image: registry.gitlab.com/devops_containers/dockers/ansible:2.9.17-alpine-v.1.0.0
+    build: 
+      context: build/ansible/.
+      args:
+        BASE_IMAGE : "alpine:edge"
+        APP_VERSION: "2.9.17"
+        ANSIBLE_LINT_VERSION: "5.0.2"
+        PIP_REQUIREMENTS: "pika sentry-sdk pip cffi python-dateutil>=2.8.0 arrow>=0.14.3 jmespath  pyyaml  pycrypto pywinrm jmespath pyapi-gitlab psycopg2-binary netaddr demjson tornado>=6.0.3 requests>=2.18.4 jsontree>=0.5.1 threaded flask Flask-APScheduler Flask-HTTPAuth gunicorn blinker memorize gunicorn"
+        RUN_USER: "ansible"
