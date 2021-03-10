@@ -66,7 +66,7 @@ defaults
 	retries 3
 	option redispatch
 	maxconn ${HAPROXY_OPT_MAXCONN:-500}
-    timeout client  ${HAPROXY_TIMEOUT_CLIENT:-440s}
+    timeout client  ${HAPROXY_TIMEOUT_CLIENT:-10800s}
     timeout server  ${HAPROXY_TIMEOUT_SERVER:-440s}
     timeout connect ${HAPROXY_TIMEOUT_CONNECT:-440s}
 frontend writer-front
@@ -76,7 +76,7 @@ frontend writer-front
 	acl white_list src ${HAPROXY_SERVICE_ALLOW_HOSTS:-10.0.0.0/8 172.16.0.0/12 127.0.0.1/32 192.168.0.0/16}
 	tcp-request content accept if white_list
 	tcp-request content reject	
-    timeout client  ${HAPROXY_TIMEOUT_CLIENT:-440s}
+    timeout client  ${HAPROXY_TIMEOUT_CLIENT:-10800s}
 frontend reader-front
 	bind *:3307
 	mode tcp
@@ -84,7 +84,7 @@ frontend reader-front
 	acl white_list src ${HAPROXY_SERVICE_ALLOW_HOSTS:-10.0.0.0/8 172.16.0.0/12 127.0.0.1/32 192.168.0.0/16}
 	tcp-request content accept if white_list
 	tcp-request content reject
-    timeout client  ${HAPROXY_TIMEOUT_CLIENT:-440s}
+    timeout client  ${HAPROXY_TIMEOUT_CLIENT:-10800s}
 frontend stats-front
 	bind *:80
 	mode http
