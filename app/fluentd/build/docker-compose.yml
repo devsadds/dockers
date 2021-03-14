@@ -1,0 +1,10 @@
+version: '2'
+services:
+  fluentd:
+    image: devsadds/fluentd:1.12.1
+    build: 
+      context: build/fluentd/.
+      args:
+        BASE_IMAGE: "alpine:3.12.0"
+        APP_VERSION: "1.12.1"
+        FLUENTD_MODULES: "fluent-plugin-elasticsearch,fluent-plugin-ua-parser,fluent-plugin-format,fluent-plugin-forest,fluent-plugin-record-reformer,fluent-plugin-record-modifier,fluent-plugin-geoip,fluent-plugin-prometheus,fluent-plugin-kafka,fluent-plugin-grep,fluent-plugin-pgjson,fluent-plugin-postgres,fluent-plugin-timescaledb,fluent-plugin-prometheus,fluent-plugin-concat,fluent-plugin-clickhouse,fluent-plugin-woothee"

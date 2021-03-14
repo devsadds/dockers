@@ -1,7 +1,8 @@
 ARG BASE_IMAGE
 FROM ${BASE_IMAGE}
 LABEL maintainer "Bitnami <containers@bitnami.com>"
-
+ARG TIMESCALE_VERSION
+ENV TIMESCALE_VERSION $TIMESCALE_VERSION
 ENV HOME="/" \
     OS_ARCH="amd64" \
     OS_FLAVOUR="debian-10" \
@@ -35,28 +36,26 @@ RUN install_packages acl ca-certificates unzip  curl gzip libbsd0 libc6 libedit2
 && curl https://releases.hashicorp.com/consul/${CONSUL_VERSION}/consul_${CONSUL_VERSION}_linux_amd64.zip -o /temp/consul_${CONSUL_VERSION}_linux_amd64.zip \
 && unzip -d /bin consul_${CONSUL_VERSION}_linux_amd64.zip \
 && chmod +x -v /bin/consul \
-&& rm -rf /temp
-COPY rootfs /
-
-RUN /opt/bitnami/scripts/postgresql-repmgr/postunpack.sh \
-&& /opt/bitnami/scripts/locales/add-extra-locales.sh
-
-RUN install_packages wget gcc make build-essential libxml2-dev libgeos-dev libproj-dev libgdal-dev libssl-dev cmake \
+&& rm -rf /temp \
+&& install_packages wget gcc make build-essential libxml2-dev libgeos-dev libproj-dev libgdal-dev libssl-dev cmake \
     && cd /tmp \
-    && wget "https://github.com/timescale/timescaledb/archive/2.1.0.tar.gz" \
+    && wget "https://github.com/timescale/timescaledb/archive/${TIMESCALE_VERSION}.tar.gz" \
     && export C_INCLUDE_PATH=/opt/bitnami/postgresql/include/:/opt/bitnami/common/include/ \
     && export LIBRARY_PATH=/opt/bitnami/postgresql/lib/:/opt/bitnami/common/lib/ \
     && export LD_LIBRARY_PATH=/opt/bitnami/postgresql/lib/:/opt/bitnami/common/lib/ \
-    && tar zxf 2.1.0.tar.gz \
-    && cd timescaledb-2.1.0 \
+    && tar zxf ${TIMESCALE_VERSION}.tar.gz \
+    && cd timescaledb-${TIMESCALE_VERSION} \
     && ./bootstrap -DUSE_OPENSSL=0 -DREGRESS_CHECKS=OFF \
     && ls -la \
     && cd build \
     && ls -la \
-    #&& ./configure --with-pgconfig=/opt/bitnami/postgresql/bin/pg_config \
     && make \
     && make install \
-    && rm -rfv /tmp/*
+    && rm -rfv /tmp/* \
+    && apt remove -y wget gcc make build-essential libxml2-dev libgeos-dev libproj-dev libgdal-dev libssl-dev cmake
+COPY rootfs /
+RUN /opt/bitnami/scripts/postgresql-repmgr/postunpack.sh \
+&& /opt/bitnami/scripts/locales/add-extra-locales.sh
 
 COPY files/pgscripts /pgscripts/
 COPY files/configs/bitnami/postgres/conf.d /opt/bitnami/postgresql/conf/conf.d
@@ -83,6 +82,7 @@ RUN chmod +x  /usr/sbin/bashrc_alias.sh /usr/sbin/initbash_profile \
     && echo "DOCKER_BUILD_DATA=${DOCKER_BUILD_DATA}" > /docker-info.d/build.info \
     && echo "VERSION_POSTGRES=${VERSION_POSTGRES}" >> /docker-info.d/build.info \
     && echo "VERSION_CONSUL=${VERSION_CONSUL}" >> /docker-info.d/build.info \
+    && echo "TIMESCALE_VERSION=${TIMESCALE_VERSION}" >> /docker-info.d/build.info \
     && echo "--------Build info----------------" \
     && cat /docker-info.d/build.info \
     && echo "--------Build info----------------" \

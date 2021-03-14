@@ -1,0 +1,9 @@
+version: '2'
+services:
+  mssql:
+    image: devsadds/mssql:2017-CU12
+    build: 
+      context: build/mssql/.
+      args:
+        BASE_IMAGE: "microsoft/mssql-server-linux:2017-CU12"
+        APP_VERSION: "2017-CU12"

@@ -1,0 +1,40 @@
+version: '2'
+
+services:
+  mssql-server-server:
+    build: docker/mssql-server-server/.
+    container_name: mssql-server-server
+    hostname: mssql-server-server    
+    ports:
+      - "1433:1433"
+      - "5022:5022"
+    volumes:
+      - "./data/mssql-server:/var/opt/mssql"
+      - "./backups:/backups"
+    environment:
+      - "ACCEPT_EULA=Y"
+      - "SA_PASSWORD=YourStrong!Passw0rd"
+      - "MSSQL_PID=Express"
+      - "MSSQL_LCID=1049" # русский
+      - "MSSQL_COLLATION=1049"
+      - "MSSQL_MEMORY_LIMIT_MB=3500" #задает максимальный объем памяти (в МБ), который можно использовать SQL Server. По умолчанию он составляет 80% от общего объема физической памяти.
+      - "MSSQL_TCP_PORT=1433"
+      - "MSSQL_IP_ADDRESS=0.0.0.0"
+      - "MSSQL_BACKUP_DIR=/backups" #Задайте расположение каталога резервного копирования по умолчанию.
+      - "MSSQL_DATA_DIR=/var/opt/mssql/data" #Перейдите в каталог, где создаются новые базы данных файлы данных SQL Server (.mdf).
+      - "MSSQL_LOG_DIR=/var/opt/mssql/log" #где создаются новые файлы журналов (LDF) базы данных SQL Server.
+      - "MSSQL_DUMP_DIR=/var/opt/mssql/dumps" #где SQL Server будет Депонировать дампы памяти и другие файлы для устранения неполадок по умолчанию.
+      - "MSSQL_ENABLE_HADR=0" #Включение группы доступности. Например "1" включена и отключена "0" - репликация
+      - "MSSQL_AGENT_ENABLED=true" #Включите агент SQL Server. Например «true» включен, и «false» отключена. По умолчанию агент отключен.
+      - "MSSQL_MASTER_DATA_FILE" #Задает расположение файла данных базы данных master.
+      - "MSSQL_ERROR_LOG_FILE" #Задает расположение файла журнала базы данных master.
+      - "MSSQL_MASTER_LOG_FILE" #Задает расположение файлов журнала ошибок.
+    restart: always
+    networks:
+      mssql-server-net:
+        aliases:
+          - mssql-server
+
+networks:
+  mssql-server-net:
+      driver: bridge
