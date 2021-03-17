@@ -1,0 +1,11 @@
+version: '2'
+services:
+  python-telegram-bots:
+    image: devsadds/python-telegram-bots:1.3.0
+    build: 
+      context: build/python-telegram-bots/.
+      args:
+        BASE_IMAGE: "alpine:edge"
+        APP_VERSION: "1.3.0"
+        RUN_USER: "ansible"
+        PIP_REQUIREMENTS: "cchardet aiodns aiohttp pika sentry-sdk pip cffi python-dateutil>=2.8.0 arrow>=0.14.3 jmespath  pyyaml  pycrypto pywinrm jmespath pyapi-gitlab psycopg2-binary netaddr demjson tornado>=6.0.3 requests>=2.18.4 jsontree>=0.5.1 threaded flask Flask-APScheduler Flask-HTTPAuth gunicorn blinker memorize gunicorn PyTelegramBotAPI==3.7.5 python-telegram-bot==13.1 python-gitlab"
