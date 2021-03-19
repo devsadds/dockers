@@ -1,0 +1,10 @@
+version: '2'
+services:
+  ps-8:
+    image: devsadds/percona:ps-8.0.22-13
+    build: 
+      context: build/ps-8/.
+      args:
+        DOCKER_BASE_IMAGE: "percona:ps-8.0.22-13"
+        CONSUL_VERSION: "1.9.3"
+    container_name: ps-8

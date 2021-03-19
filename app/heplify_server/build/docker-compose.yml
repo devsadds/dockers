@@ -1,0 +1,9 @@
+version: '2'
+services:
+  heplify-server:
+    image: devsadds/heplify-server:1.0.0
+    build: 
+      context: build/heplify-server/.
+      args:
+        BASE_IMAGE: "sipcapture/heplify-server:master"
+        APP_VERSION: "1.0.0"
