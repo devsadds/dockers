@@ -51,6 +51,7 @@ global
     stats socket ipv4@127.0.0.1:9999 level admin
     stats socket /usr/share/haproxy/hapee-lb.sock mode 666 level admin
     stats timeout 2m
+    master-worker
 
 resolvers consul
   	nameserver consul localhost:8600
@@ -61,7 +62,6 @@ defaults
 	mode http
 	log global
 	option tcplog
-	#option httplog
 	option dontlognull
 	retries 3
 	option redispatch
@@ -137,6 +137,9 @@ backend stats-back
 	balance roundrobin
 	stats uri ${HAPROXY_STATS_URL:-/haproxy/stats}
 	stats auth ${HAPROXY_STATS_AUTH_USER:-haproxyuser1}:${HAPROXY_STATS_AUTH_PASSWORD:-haproxyuser1PASSWORD}
+    stats show-legends
+    stats show-node
+    stats enable
 
 backend exporter-back
    mode http

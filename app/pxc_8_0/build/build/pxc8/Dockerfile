@@ -21,15 +21,19 @@ RUN groupadd -g 1001 mysql \
 		       tzdata \
 		       supervisor \
 		       inetutils-ping \
+    && apt-get install -y libpwquality-tools cracklib-runtime \
     && cd /tmp \
-	&& wget https://repo.percona.com/apt/percona-release_latest.generic_all.deb \
-	&& dpkg -i percona-release_latest.generic_all.deb ||  apt-get install --fix-broken -y \
-	&& apt-get update && apt-get install -y percona-xtradb-cluster-57 \
+	&& curl https://repo.percona.com/apt/percona-release_latest.generic_all.deb  -o percona-release_latest.generic_all.deb && dpkg -i percona-release_latest.generic_all.deb ||  apt-get install --fix-broken -y \
+	&& apt-get update && percona-release show \
+	&& percona-release enable pxc-80 release \
+	&& apt-get update \
+	&& apt search percona-xtradb-cluster-server \
+	&& apt-get install -y percona-xtradb-cluster-server \
 	&& apt-get install -y pmm2-client \
 	&& echo "PXc Mysqld version" \
-	&& echo "-----------------------" \
+	&& echo "----------------------" \
 	&& mysqld --version \
-	&& echo "-----------------------" \
+	&& echo "----------------------" \
 	&& sed -ri 's/^user\s/#&/' /etc/mysql/my.cnf \
 	&& rm -rf /var/lib/mysql \
 	&& mkdir -p /var/lib/mysql /var/run/mysqld \
@@ -65,9 +69,11 @@ RUN mkdir /docker-info.d/ /tmp/logs \
 	&& echo "--------Build info--------------" \
 	&& cat /docker-info.d/build.info \
 	&& echo "--------Build info----------------" \
-    && usermod -a -G tty mysql
+    && usermod -a -G tty mysql \
+    &&  pwmake --help \
+    && ls -l /var/cache/cracklib/cracklib_dict.pwd
 VOLUME ["/var/lib/mysql", "/var/log/mysql"]
-EXPOSE 3306 4567 4568
+EXPOSE 3306 4444 4567 4568
 USER root
 ENTRYPOINT ["/docker-entrypoint.sh"]
 CMD [""]
