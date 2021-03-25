@@ -71,7 +71,9 @@ RUN mkdir /docker-info.d/ /tmp/logs \
 	&& echo "--------Build info----------------" \
     && usermod -a -G tty mysql \
     &&  pwmake --help \
-    && ls -l /var/cache/cracklib/cracklib_dict.pwd
+    && ls -l /var/cache/cracklib/cracklib_dict.pwd \
+    && rm /etc/mysql/mysql.conf.d/mysqld.cnf \
+    && cat /etc/mysql/conf.d/node.cnf
 VOLUME ["/var/lib/mysql", "/var/log/mysql"]
 EXPOSE 3306 4444 4567 4568
 USER root

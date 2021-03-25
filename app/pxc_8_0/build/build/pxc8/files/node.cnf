@@ -20,3 +20,4 @@ wsrep_sst_method=xtrabackup-v2
 
 pxc-encrypt-cluster-traffic=OFF
 pxc_strict_mode=ENFORCING
+skip-log-bin

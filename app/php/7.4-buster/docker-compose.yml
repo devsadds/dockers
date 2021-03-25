@@ -1,0 +1,16 @@
+version: '3.5'
+services:
+  php:
+    image: registry.gitlab.com/devops_containers/dockers/php:7.4.16-fpm-buster
+    build: 
+      context: ./build/fpm-buster/
+      args:
+        DOCKER_IMAGE_TAG: "php:7.4.16-fpm-buster"
+
+        
+        
+         
+         
+         
+         
+        

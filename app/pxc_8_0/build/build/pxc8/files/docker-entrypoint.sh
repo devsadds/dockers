@@ -271,7 +271,8 @@ mysql_tune(){
   if [[ "${GTID_REPLICATION}" == "true"  && "${REPLICATION_ROLE}" == "master" ]];then
 
     if [[ -f "${m_config}" ]];then
-
+      grep -q '^skip-log-bin' "${m_config}" && sed -i  "s/skip-log-bin.*$/#skip-log-bin/g" "${m_config}"
+      grep -q '^disable_log_bin' "${m_config}" && sed -i  "s/disable_log_bin.*$/#disable_log_bing" "${m_config}"
       grep -q '^binlog_format' "${m_config}" && sed -i  "s/binlog_format.*$/binlog_format=${BINLOG_FOMAT:-ROW}/g" "${m_config}" || echo "binlog_format=${BINLOG_FOMAT:-ROW}" >> "${m_config}"
       grep -q '^server-id' "${m_config}" && sed -i  "s/server-id.*$/server-id=${mysql_server_id:-${master_server_id}}/g" "${m_config}" || echo "server-id=${mysql_server_id:-${master_server_id}}" >> "${m_config}"
       grep -q '^log-bin' "${m_config}" && sed -i  "s/log-bin.*$/log-bin=percona_${mysql_server_id:-${master_server_id}}_bin/g" "${m_config}" || echo "log-bin=percona_${mysql_server_id:-${master_server_id}}_bin" >> "${m_config}"
@@ -359,7 +360,8 @@ wsrep_log_conflicts
 wsrep_sst_method=xtrabackup-v2
 
 pxc-encrypt-cluster-traffic=OFF
-
+skip-log-bin
+disable_log_bin
 OEF
 
 
