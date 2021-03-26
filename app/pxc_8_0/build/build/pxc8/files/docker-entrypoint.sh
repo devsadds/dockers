@@ -254,7 +254,7 @@ mysql_tune(){
         grep -q '^innodb_file_per_table' "${m_config}" && sed -i  "s/innodb_file_per_table.*$/innodb_file_per_table = ${INNODB_FILE_PER_TABLE:-1}/g" "${m_config}" || echo "innodb_file_per_table = ${INNODB_FILE_PER_TABLE:-1}" >> "${m_config}"
         grep -q '^innodb_buffer_pool_size' "${m_config}" && sed -i  "s/innodb_buffer_pool_size.*$/innodb_buffer_pool_size = ${INNODB_BUFFER_POOL_SIZE:-2G}/g" "${m_config}" || echo "innodb_buffer_pool_size = ${INNODB_BUFFER_POOL_SIZE:-2G}" >> "${m_config}"
         grep -q '^innodb_autoinc_lock_mode' "${m_config}" "${m_config}" && sed -i  "s/innodb_autoinc_lock_mode.*$/innodb_autoinc_lock_mode = ${INNODB_AUTOINC_LOCK_MODE:-2}/g" "${m_config}" || echo "innodb_autoinc_lock_mode = ${INNODB_AUTOINC_LOCK_MODE:-2}" >> "${m_config}"
-        grep -q '^max_allowed_packet' "${m_config}" && sed -i  "s/max_allowed_packet.*$/max_allowed_packet = ${MAX_ALLOWED_PACKET:-128M}/g" "${m_config}" || echo "max_allowed_packet = ${MAX_ALLOWED_PACKET:-32M}" >> "${m_config}"
+        grep -q '^max_allowed_packet' "${m_config}" && sed -i  "s/max_allowed_packet.*$/max_allowed_packet = ${MAX_ALLOWED_PACKET:-172M}/g" "${m_config}" || echo "max_allowed_packet = ${MAX_ALLOWED_PACKET:-172M}" >> "${m_config}"
         grep -q '^max_connect_errors' "${m_config}" && sed -i  "s/max_connect_errors.*$/max_connect_errors = ${MAX_CONNECT_ERRORS:-1000000}/g" "${m_config}" || echo "max_connect_errors = ${MAX_CONNECT_ERRORS:-1000000}" >> "${m_config}"
         grep -q '^max_connections' "${m_config}" && sed -i  "s/max_connections.*$/max_connections = ${MAX_CONNECTIONS:-300}/g" "${m_config}" || echo "max_connections = ${MAX_CONNECTIONS:-300}" >> "${m_config}"
         grep -q '^wsrep_slave_threads' "${m_config}" && sed -i  "s/wsrep_slave_threads.*$/wsrep_slave_threads = ${WSREP_SLAVE_THREADS:-8}/g" "${m_config}" || echo "wsrep_slave_threads = ${WSREP_SLAVE_THREADS:-2}" >> "${m_config}"
@@ -362,6 +362,10 @@ wsrep_sst_method=xtrabackup-v2
 pxc-encrypt-cluster-traffic=OFF
 skip-log-bin
 disable_log_bin
+
+max_allowed_packet=${MAX_ALLOWED_PACKET:-256M}
+max_connections=${MAX_CONNECTIONS:-300}
+wsrep_node_address=${ipaddr}
 OEF
 
 
@@ -516,41 +520,44 @@ EOSQL
        echo
     fi
     fi
+    chown mysql:mysql -R -v ${DATADIR:-/var/lib/mysql}
    
 }
 
 supervisord_mysql(){
-     echo
-     echo "Registering in the discovery service $DISCOVERY_SERVICE"
-     echo
+  echo
+  echo "Registering in the discovery service $DISCOVERY_SERVICE"
+  echo
      
 set +e
-     
-     # Get ips from pxc services
-     i1=$(dig +short -p 8600 $PXC_SERVICE) || ""
-     
-     # Remove this container ip from the list
-     i2=$(echo $i1 | sed -r "s/$ipaddr//") || ""
-     
-     
-     cluster_join=$(funct_join , $i2 )
-     
-     echo "Joining cluster $cluster_join"
-     
+  # Get ips from pxc services
+  i1=$(dig +short -p 8600 $PXC_SERVICE) || ""
+  # Remove this container ip from the list
+  i2=$(echo $i1 | sed -r "s/$ipaddr//") || ""
+  cluster_join=$(funct_join , $i2 )
+  echo "Joining cluster $cluster_join"
 set -e
   
-    if [[ ! -f "${MYSQL_ERROR_LOG_DIR}/error.log" ]] ;then 
+  if [[ ! -f "${MYSQL_ERROR_LOG_DIR}/error.log" ]] ;then 
     touch ${MYSQL_ERROR_LOG_DIR}/error.log
-    fi
-    ln -sf  ${MYSQL_ERROR_LOG_DIR}/error.log /dev/stdout
-    chown mysql:mysql ${MYSQL_ERROR_LOG_DIR}/error.log
+  fi
+  ln -sf  ${MYSQL_ERROR_LOG_DIR}/error.log /dev/stdout
+  chown mysql:mysql ${MYSQL_ERROR_LOG_DIR}/error.log
+  /bin/cat <<OEF> /tmp/script_run_pxc8.sh
+#!/usr/bin/env bash
+if [[ -d "${DATADIR:-/var/lib/mysql}/sst-xb-tmpdir" ]];then
+  rm -rf ${DATADIR:-/var/lib/mysql}/sst-xb-tmpdir
+fi     
+mysqld --user=mysql  --log-error-verbosity=2 --wsrep-cluster-name=$CLUSTER_NAME --wsrep-cluster-address="gcomm://$cluster_join" --wsrep-sst-method=xtrabackup-v2  --wsrep-node-address="$ipaddr"  --wsrep-log-conflicts --pxc-encrypt-cluster-traffic=OFF --log-error=${MYSQL_ERROR_LOG_DIR}/error.log $CMDARG
+OEF
+  chmod +x  /tmp/script_run_pxc8.sh
   /bin/cat <<OEF> /etc/supervisor/conf.d/pxc-8-0.conf
 
 [supervisord]
 nodaemon=true
 
 [program:pxc-8-0]
-command=mysqld --user=mysql  --log-error-verbosity=2 --wsrep_cluster_name=$CLUSTER_NAME --wsrep_cluster_address="gcomm://$cluster_join" --wsrep_sst_method=xtrabackup-v2  --wsrep_node_address="$ipaddr"  --wsrep_log_conflicts --pxc-encrypt-cluster-traffic=OFF --log-error=${MYSQL_ERROR_LOG_DIR}/error.log $CMDARG
+command=/tmp/script_run_pxc8.sh
 process_name=%(program_name)s
 autostart=true
 autorestart=true
@@ -558,7 +565,7 @@ user=root
 startretries=10
 priority=999
 stopsignal=TERM
-stopwaitsecs=50
+stopwaitsecs=25
 stopasgroup=false
 killasgroup=false
 redirect_stderr=true
@@ -588,7 +595,7 @@ stderr_logfile_maxbytes = 0
 OEF
 echo "Run mysqld supervisord Options"
 echo "------------------------"
-echo "mysqld --user=mysql  --log-error-verbosity=2 --wsrep_cluster_name=$CLUSTER_NAME --wsrep_cluster_address=\"gcomm://$cluster_join\" --wsrep_sst_method=xtrabackup-v2  --wsrep_node_address=\"$ipaddr\"  --wsrep_log_conflicts --pxc-encrypt-cluster-traffic=OFF --log-error=${MYSQL_ERROR_LOG_DIR}/error.log $CMDARG"
+cat /tmp/script_run_pxc8.sh | grep 'mysqld'
 echo "------------------------"
 }
 
