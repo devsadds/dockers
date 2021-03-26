@@ -366,6 +366,8 @@ disable_log_bin
 max_allowed_packet=${MAX_ALLOWED_PACKET:-256M}
 max_connections=${MAX_CONNECTIONS:-300}
 wsrep_node_address=${ipaddr}
+sort_buffer_size=${SORT_BUFFER_SIZE:-2M}
+skip_name_resolve
 OEF
 
 

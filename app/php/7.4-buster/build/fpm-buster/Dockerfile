@@ -4,7 +4,7 @@ ENV APCU_VERSION 5.1.18
 ENV REDIS_VERSION 5.2.1
 
 ENV DEBIAN_FRONTEND noninteractive
-
+ENV PG_VERSION=13
 ENV PHPIZE_DEPS \
     dpkg-dev \
     bzip2 \
@@ -63,32 +63,35 @@ ENV runtimeDeps \
             nodejs \
             npm \
             postgresql-client \
-            ${PHPIZE_DEPS}
+            ${PHPIZE_DEPS} \
+            wget
 
 
 ENV buildDeps \
             make \
             libffi-dev \
-            postgresql-server-dev-13 \
+            postgresql-server-dev-${PG_VERSION} \
             libpq-dev \
             g++ \
             gcc \
             autoconf
 
-
-
 RUN apt update --fix-missing && apt install -y  $runtimeDeps \
+        && wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add - \
+        && echo 'deb http://apt.postgresql.org/pub/repos/apt/ buster-pgdg main' >> /etc/apt/sources.list \
+    && apt update \
     && apt install -y  $buildDeps \
     && curl -sS https://getcomposer.org/installer | php && mv composer.phar /usr/local/bin/composer && composer --version \
         && echo "alias composer='composer'" >> /root/.bashrc \
         && composer
-RUN deluser xfs \
-    && deluser www-data \
-    && addgroup -S -g 33 www-data \
-    && adduser -S -D -u 33 -s /sbin/nologin -h /var/www -G www-data www-data \
-    && chown -R www-data:www-data /var/www \
+ENV RUN_USER www-data
+RUN deluser ${RUN_USER} \
+  && groupadd --gid 33 ${RUN_USER} \
+  && useradd --uid 33 --gid ${RUN_USER} --shell  /sbin/nologin --home-dir /var/www  ${RUN_USER} \
+  && if [ ! -d /var/www ]; then mkdir -p /var/www;fi \
+  && chown -R ${RUN_USER}:${RUN_USER}  /var/www;
 
-
+RUN apt install -y libwebp-dev libonig-dev
 RUN pecl install \
         imagick \
         apcu-${APCU_VERSION} \
