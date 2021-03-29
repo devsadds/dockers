@@ -1,9 +1,9 @@
 version: '3.5'
 services:
   php:
-    image: registry.gitlab.com/devops_containers/dockers/php:7.4.16-fpm-buster
+    image: registry.gitlab.com/devops_containers/dockers/php:7.4.16-fpm-focal
     build: 
-      context: ./build/fpm-buster/
+      context: ./build/fpm-focal/
       args:
         DOCKER_IMAGE_BASE: "ubuntu:focal"
 

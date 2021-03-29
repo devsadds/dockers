@@ -5,7 +5,7 @@ services:
     build: 
       context: ./build/fpm-buster/
       args:
-        DOCKER_IMAGE_BASE: "ubuntu:focal"
+        DOCKER_IMAGE_TAG: "php:7.4.16-fpm-buster"
 
         
         
