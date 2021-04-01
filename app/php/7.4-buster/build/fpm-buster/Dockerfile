@@ -47,9 +47,14 @@ RUN printf "\n" | pecl install \
         apcu-5.1.20 \
         apcu_bc-1.0.5  \
         redis-5.3.4
-RUN docker-php-ext-configure zip \
-        opcache --enable-opcache \
-    && docker-php-ext-install \
+RUN docker-php-ext-enable --ini-name docker-php-ext-redis.ini redis \
+    && docker-php-ext-enable --ini-name docker-php-ext-imagick.ini imagick \
+    && docker-php-ext-enable --ini-name docker-php-ext-apcu.ini apcu \
+    && docker-php-ext-enable --ini-name docker-php-ext-apc.ini apc \
+    && docker-php-ext-enable --ini-name docker-php-ext-opcache.ini opcache \
+    && ls -la /usr/local/etc/php/conf.d/*
+RUN apt install -y libonig-dev
+RUN  docker-php-ext-install \
         zip \
         intl \
         pdo_mysql \
@@ -72,12 +77,7 @@ RUN docker-php-ext-configure zip \
         gd
 RUN ls -la /usr/local/etc/php/conf.d/*
 
-RUN    docker-php-ext-enable --ini-name 20-imagick.ini imagick \
-    && docker-php-ext-enable --ini-name 21-apcu.ini apcu \
-    && docker-php-ext-enable --ini-name 22-apc.ini apc \
-    && docker-php-ext-enable --ini-name 23-opcache.ini opcache \
-    && docker-php-ext-enable --ini-name 24-redis.ini redis \
-    && docker-php-ext-enable mysqli \
+RUN docker-php-ext-enable mysqli \
     && docker-php-ext-enable imap
 
 RUN ls -la /usr/local/etc/php/conf.d/* \

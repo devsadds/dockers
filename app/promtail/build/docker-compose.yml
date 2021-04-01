@@ -1,0 +1,10 @@
+version: '2'
+services:
+  promtail:
+    image: registry.gitlab.com/devops_containers/dockers/promtail:1.0.0
+    build: 
+      context: build/promtail/.
+      args:
+        BASE_IMAGE: "grafana/promtail:master-4d1da2e-amd64"
+        APP_VERSION: "1.0.0"
+        TOUCH_PROTOS: "0"

@@ -18,7 +18,6 @@ ENV PHP_SOURCE_URL https://raw.githubusercontent.com/docker-library/php/1bc63c1c
 
 ENV PHPIZE_DEPS \
         autoconf \
-        bzip2 \
         file \
         gnupg \
         graphviz \
@@ -27,8 +26,8 @@ ENV PHPIZE_DEPS \
         libmemcachedutil2 \
         unzip \
         pkg-config \
-        re2c \
-        postgresql-client-${PG_VERSION}
+        re2c
+
 
 ENV runtimeDeps \
         rsync \
@@ -48,7 +47,11 @@ ENV runtimeDeps \
         imagemagick \
         dirmngr \
         libwebp-dev \
-        libonig-dev
+        libonig-dev \
+        postgresql-client-${PG_VERSION} \
+        bzip2 \
+        lbzip2
+
 ENV buildDeps \
         make \
         libffi-dev \
@@ -231,8 +234,7 @@ RUN docker-php-ext-configure gd \
 && docker-php-ext-enable --ini-name 21-apc.ini apc \
 && docker-php-ext-enable --ini-name 05-opcache.ini opcache \
 && docker-php-ext-enable --ini-name 20-redis.ini redis \
-&& docker-php-ext-enable mysqli \
-&& apk del --no-cache  .build-deps  freetype-dev libpng-dev libjpeg-turbo-dev
+&& docker-php-ext-enable mysqli
 RUN ldconfig\
     && mkdir -p /usr/local/etc/php-fpm.d \
     && mkdir -p  /etc/supervisor/conf.d/ \
