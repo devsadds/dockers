@@ -1,10 +1,8 @@
-telegram_token: "574255622:AAFK4nEPuYbgoTvuiUBjMuGGcFUKSyjsGuo"
-# ONLY IF YOU USING TEMPLATE required for test
-
-template_path: "/config/template.tmpl" 
+telegram_token: "TOKEN"
+template_path: "/etc/prometheus_bot/template.tmpl"
 time_zone: "Asia/Yekaterinburg"
-split_token: "|"    
-
-# ONLY IF YOU USING DATA FORMATTING FUNCTION, NOTE for developer: important or test fail
 time_outdata: "02/01/2006 15:04:05" 
+split_token: "|"    
 split_msg_byte: 4000
+send_only: true
+split_token: "|"
