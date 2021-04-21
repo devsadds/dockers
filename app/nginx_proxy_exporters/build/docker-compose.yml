@@ -1,11 +1,11 @@
 version: '2'
 services:
   nginx_proxy_exporters:
-    image: devsadds/nginx_proxy_exporters:1.0.0
+    image: devsadds/nginx_proxy_exporters:1.1.0
     build: 
       context: build/nginx_proxy_exporters/.
       args:
         BASE_IMAGE: "nginx:mainline-alpine"
-        APP_VERSION: "1.0.0"
+        APP_VERSION: "1.1.0"
 
 
