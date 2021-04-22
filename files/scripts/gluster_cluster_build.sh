@@ -2,7 +2,6 @@
 
 ##Example run
 ##.//gluster_cluster_build.sh --ssh_private_key_path=/home/human/.ssh/id_rsa  --gluster_servers_ips=192.168.122.152,192.168.122.153 --gluster_ppa_ver=9 --gluster_role=server --gluster_store_disk=/dev/vdb --gluster_private_network_mask=192.168.122 --gluster_server_data_folder=/glusterfs --gluster_volume_name=vg0 --gluster_mountpoint=/docker-compose --gluster_clients_ips=192.168.122.151,192.168.122.152,192.168.122.153
-```
 
 for i in "$@"
 do
@@ -43,7 +42,7 @@ case $i in
     GLUSTER_MOUNTPOINT="${i#*=}"
     shift # past argument=value
     ;;
-    --GLUSTER_CLIENTS_IPS_ips=*) # GLUSTER_CLIENTS_IPS_ips=116.203.245.188,116.203.245.187,116.203.225.65,116.203.245.244
+    --gluster_clients_ips=*) # GLUSTER_CLIENTS_IPS_ips=116.203.245.188,116.203.245.187,116.203.225.65,116.203.245.244
     GLUSTER_CLIENTS_IPS="${i#*=}"
     shift # past argument=value
     ;;	
@@ -74,6 +73,42 @@ printf  '\n%s\n' "####################################"
 printf  '\n%s\n' "###GLUSTER_SERVERS_IPS=${GLUSTER_SERVERS_IPS}"
 printf  '\n%s\n' "###GLUSTER_CLIENTS_IPS=${GLUSTER_CLIENTS_IPS}"
 sleep 5;
+
+
+gluster_fs_security(){
+
+/bin/cat <<OEF> /tmp/script_1.sh
+	allow_networks="192.168.0.0/16 10.0.0.0/8 172.16.0.0/12 127.0.0.1/32"
+	for allow_network in \${allow_networks}
+	do
+		grep -q "portmap: \${allow_network}" /etc/hosts.allow  && echo "already done"  || echo "portmap: \${allow_network}" >> /etc/hosts.allow
+	done
+	grep -q 'portmap: ALL' /etc/hosts.deny && echo "already done" || echo "portmap: ALL" >> /etc/hosts.deny
+	grep -q 'rpcbind: ALL' /etc/hosts.deny && echo "already done" || echo "rpcbind: ALL" >> /etc/hosts.deny
+	cat /etc/hosts.allow && cat /etc/hosts.deny
+	echo iptables-persistent iptables-persistent/autosave_v4 boolean true |  debconf-set-selections
+	echo iptables-persistent iptables-persistent/autosave_v6 boolean true |  debconf-set-selections
+	apt-get -y install iptables-persistent
+	for allow_network in \$allow_networks
+	do
+		iptables -A INPUT -p udp -s ${allow_network} --dport 111 -j ACCEPT
+		iptables -A INPUT -p tcp -s ${allow_network} --dport 111 -j ACCEPT
+	done
+	iptables -A INPUT -p udp --dport 111 -j DROP
+	iptables -A INPUT -p tcp --dport 111 -j DROP
+	netfilter-persistent save
+	netfilter-persistent start
+OEF
+
+
+for server in $(echo "${GLUSTER_CLIENTS_IPS}" | tr -s "," " ")
+do
+	echo "configure iptables for glusterfs on server ${server}"
+	ssh ${SSH_OPTIONS} root@${server} << EOF
+
+EOF
+done
+}
 
 
 gluster_cluster_clean(){
@@ -264,12 +299,13 @@ done
 
 
 main() {
-	gluster_server_configure
-	gluster_server_make_disk
-	gluster_server_start
-	gluster_volume_create
-	gluster_volume_mount_on_server
-	gluster_volume_mount_clients
+	gluster_fs_security
+	#gluster_server_configure
+	#gluster_server_make_disk
+	#gluster_server_start
+	#gluster_volume_create
+	#gluster_volume_mount_on_server
+	#gluster_volume_mount_clients
 }
 
 main
