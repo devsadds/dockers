@@ -1,7 +1,8 @@
 #!/bin/bash
 
 ##Example run
-##./gluster_cluster_build.sh --ssh_private_key_path=files/deploy-keys/convy-deploy-multi@mail/id_rsa --gluster_servers_ips=116.203.245.187,116.203.225.65 --gluster_ppa_ver=5 --gluster_role=server --gluster_store_disk=/dev/sdb --gluster_private_network_mask=10.10.1 --gluster_server_data_folder=/glusterfs --gluster_volume_name=vg0 --gluster_mountpoint=/docker-compose --gluster_clients_ips=116.203.245.188,116.203.245.187,116.203.225.65,116.203.245.244
+##.//gluster_cluster_build.sh --ssh_private_key_path=/home/human/.ssh/id_rsa  --gluster_servers_ips=192.168.122.152,192.168.122.153 --gluster_ppa_ver=9 --gluster_role=server --gluster_store_disk=/dev/vdb --gluster_private_network_mask=192.168.122 --gluster_server_data_folder=/glusterfs --gluster_volume_name=vg0 --gluster_mountpoint=/docker-compose --gluster_clients_ips=192.168.122.151,192.168.122.152,192.168.122.153
+```
 
 for i in "$@"
 do
@@ -42,8 +43,8 @@ case $i in
     GLUSTER_MOUNTPOINT="${i#*=}"
     shift # past argument=value
     ;;
-    --gluster_clients_ips=*) # gluster_clients_ips=116.203.245.188,116.203.245.187,116.203.225.65,116.203.245.244
-    GLUSTER_CLIENTS="${i#*=}"
+    --GLUSTER_CLIENTS_IPS_ips=*) # GLUSTER_CLIENTS_IPS_ips=116.203.245.188,116.203.245.187,116.203.225.65,116.203.245.244
+    GLUSTER_CLIENTS_IPS="${i#*=}"
     shift # past argument=value
     ;;	
     --default)
@@ -71,6 +72,7 @@ printf  '\n%s\n' "GLUSTER_PRIVATE_NETWORK_MASK=$GLUSTER_PRIVATE_NETWORK_MASK"
 printf  '\n%s\n' "####################################"
 printf  '\n%s\n' "####################################"
 printf  '\n%s\n' "###GLUSTER_SERVERS_IPS=${GLUSTER_SERVERS_IPS}"
+printf  '\n%s\n' "###GLUSTER_CLIENTS_IPS=${GLUSTER_CLIENTS_IPS}"
 sleep 5;
 
 
@@ -78,6 +80,7 @@ gluster_cluster_clean(){
 	apt purge -y glusterfs-server 
 	rm -rf /var/lib/glusterd
 	wipefs --all /dev/vdb
+ 	apt purge glusterfs-server* -y --allow-change-held-packages; rm -rf v/var/lib/glusterd* -v; apt autoremove -y
 }	
 
 
@@ -99,7 +102,8 @@ do
 
 	ssh ${SSH_OPTIONS} root@${server} << EOF
 		wget -O - https://download.gluster.org/pub/gluster/glusterfs/${GLUSTER_PPA_VER}/rsa.pub | apt-key add -
-		dpkg-query -l glusterfs-server > /dev/null || (echo deb [arch=amd64] https://download.gluster.org/pub/gluster/glusterfs/${GLUSTER_PPA_VER}/LATEST/Debian/${DEBVER}/amd64/apt ${DEBVER} main > /etc/apt/sources.list.d/gluster.list  && apt update && apt install glusterfs-server -y && apt-mark hold glusterfs*)
+		apt-cache policy glusterfs-server | grep -e  'Installed.*none' && echo deb [arch=amd64] https://download.gluster.org/pub/gluster/glusterfs/${GLUSTER_PPA_VER}/LATEST/Debian/${DEBVER}/amd64/apt ${DEBVER} main > /etc/apt/sources.list.d/gluster.list  && apt update && apt install glusterfs-server -y && apt-mark hold glusterfs-server* glusterfs-client* || (echo "glusterfs-server already installed")
+
 EOF
 	GLUSTER_SERVER_HOSTNAME=$(ssh root@${server} hostname)
 	GLUSTER_SERVER_PRIVATE_IP=$(ssh root@${server} ip a | grep "${GLUSTER_PRIVATE_NETWORK_MASK}" | awk '{ print $2 }' | cut -d \/ -f1)
@@ -121,7 +125,9 @@ do
 EOF
 
 done
+}
 
+gluster_server_make_disk() {
 
 for server in $(echo "${GLUSTER_SERVERS_IPS}" | tr -s "," " ")
 do
@@ -152,19 +158,27 @@ EOF
 		grep -q "${GLUSTER_SERVER_DATA}" /etc/fstab || (echo '${BLKID_GLUSTER} ${GLUSTER_SERVER_DATA} ext4 rw,noatime 0' >> /etc/fstab)
 		mount -a
 EOF
-
 done
-	echo "Exec systemctl start glusterd.service on ${server} "
+}
+
+gluster_server_start() {
+
+for server in $(echo "${GLUSTER_SERVERS_IPS}" | tr -s "," " ")
+do
+	echo "Exec systemctl start glusterd.service on ${server}"
 	ssh ${SSH_OPTIONS} root@${server} << EOF
 		systemctl enable glusterd.service;
 		systemctl start glusterd.service;
-		sleep 5;
-		systemctl start glusterd.service;
+		sleep 15;
 		systemctl status glusterd.service;
 EOF
-# From first server make peer probe second server
-
+	glusterfs_server_status=$(ssh ${SSH_OPTIONS} root@${server} systemctl status glusterd.service)
+	echo "Server=$server. glusterfs_server_status = $glusterfs_server_status"
+done
 }
+
+
+
 
 gluster_volume_create(){
 	echo "exec gluster peer probe ${GLUSTER_PEER_PROBED_SERVER_NAME_2}"
@@ -183,8 +197,6 @@ ssh root@${GLUSTED_PEER_PROBED_SERVER_2} <<OEF
 	mkdir -p ${GLUSTER_SERVER_DATA}/gvol0
 OEF
 
-
-
 echo "Gluster volume gvol0 create  on ${GLUSTED_PEER_PROBED_SERVER_1}"
 ssh root@${GLUSTED_PEER_PROBED_SERVER_1} <<OEF
 
@@ -197,9 +209,10 @@ ssh root@${GLUSTED_PEER_PROBED_SERVER_1} <<OEF
 			echo "Gluster volume name ${GLUSTER_SERVER_VOLUME_NAME} already exist. Trigger file is ${GLUSTER_VOLUME_STATUS_FILE}"
 		fi
 OEF
-	}
+	
 echo "Gluster volume gvol0 created  on ${GLUSTED_PEER_PROBED_SERVER_1}.Sleep 20;"
 sleep 20;
+}
 
 gluster_volume_mount_on_server(){
 ssh root@${GLUSTED_PEER_PROBED_SERVER_1} <<OEF
@@ -221,11 +234,11 @@ OEF
 
 
 
-gluster_mount_clients() {
+gluster_volume_mount_clients() {
 
-	echo "gluster_mount_clients on ${GLUSTER_CLIENTS}"
+	echo "gluster_mount_clients on ${GLUSTER_CLIENTS_IPS}"
 
-for server in $(echo "${GLUSTER_CLIENTS}" | tr -s "," " ")
+for server in $(echo "${GLUSTER_CLIENTS_IPS}" | tr -s "," " ")
 do
 
 	scp ${GLUSTER_HOSTS_FILE} root@${server}:/tmp/
@@ -237,7 +250,7 @@ do
 	ssh ${SSH_OPTIONS} root@${server} << EOF
 
 		wget -O - https://download.gluster.org/pub/gluster/glusterfs/${GLUSTER_PPA_VER}/rsa.pub | apt-key add -
-		dpkg-query -l glusterfs-client > /dev/null || (echo deb [arch=amd64] https://download.gluster.org/pub/gluster/glusterfs/${GLUSTER_PPA_VER}/LATEST/Debian/${DEBVER}/amd64/apt ${DEBVER} main > /etc/apt/sources.list.d/gluster.list  && apt update && apt install glusterfs-client -y && apt-mark hold glusterfs-client*)
+		apt-cache policy glusterfs-server | grep -e  'Installed.*none' && echo deb [arch=amd64] https://download.gluster.org/pub/gluster/glusterfs/${GLUSTER_PPA_VER}/LATEST/Debian/${DEBVER}/amd64/apt ${DEBVER} main > /etc/apt/sources.list.d/gluster.list  && apt update && apt install glusterfs-client -y && apt-mark hold glusterfs-client* || (echo "glusterfs-client already installed")
 
 		grep -q "${GLUSTER_SERVER_DATA}" /etc/hosts || (cat ${GLUSTER_HOSTS_FILE} >> /etc/hosts)
 		mkdir -p ${GLUSTER_MOUNTPOINT};
@@ -252,9 +265,11 @@ done
 
 main() {
 	gluster_server_configure
-	#gluster_volume_create
-	#gluster_volume_mount_on_server
-	#gluster_mount_clients
+	gluster_server_make_disk
+	gluster_server_start
+	gluster_volume_create
+	gluster_volume_mount_on_server
+	gluster_volume_mount_clients
 }
 
 main
