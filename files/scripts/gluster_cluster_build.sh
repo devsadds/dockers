@@ -77,7 +77,7 @@ sleep 5;
 
 gluster_fs_security(){
 
-/bin/cat <<OEF> /tmp/script_1.sh
+/bin/cat <<OEF> /tmp/${FUNCNAME[0]}.sh
 	allow_networks="192.168.0.0/16 10.0.0.0/8 172.16.0.0/12 127.0.0.1/32"
 	for allow_network in \${allow_networks}
 	do
@@ -91,8 +91,8 @@ gluster_fs_security(){
 	apt-get -y install iptables-persistent
 	for allow_network in \$allow_networks
 	do
-		iptables -A INPUT -p udp -s ${allow_network} --dport 111 -j ACCEPT
-		iptables -A INPUT -p tcp -s ${allow_network} --dport 111 -j ACCEPT
+		iptables -A INPUT -p udp -s \${allow_network} --dport 111 -j ACCEPT
+		iptables -A INPUT -p tcp -s \${allow_network} --dport 111 -j ACCEPT
 	done
 	iptables -A INPUT -p udp --dport 111 -j DROP
 	iptables -A INPUT -p tcp --dport 111 -j DROP
@@ -103,10 +103,22 @@ OEF
 
 for server in $(echo "${GLUSTER_CLIENTS_IPS}" | tr -s "," " ")
 do
+	rsync -vPz /tmp/${FUNCNAME[0]}.sh  root@${server}:/tmp/${FUNCNAME[0]}.sh
 	echo "configure iptables for glusterfs on server ${server}"
 	ssh ${SSH_OPTIONS} root@${server} << EOF
+	bash /tmp/${FUNCNAME[0]}.sh
 
 EOF
+done
+}
+
+system_prepare(){
+	for server in $(echo "${GLUSTER_SERVERS_IPS}" | tr -s "," " ")
+do
+	ssh ${SSH_OPTIONS} root@${server} << EOF
+		apt install -y rsync
+EOF
+
 done
 }
 
@@ -299,6 +311,7 @@ done
 
 
 main() {
+	system_prepare
 	gluster_fs_security
 	#gluster_server_configure
 	#gluster_server_make_disk
