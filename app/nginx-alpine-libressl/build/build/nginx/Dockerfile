@@ -189,7 +189,11 @@ LABEL maintainer "a.v.galushko86@gmail.com"
 ADD files/nginx.conf /etc/nginx/nginx.conf
 ADD files/nginx-logs.conf /etc/nginx/nginx-logs.conf
 ADD files/nginx-logs-headers.conf /etc/nginx/nginx-logs-headers.conf
-RUN cat /root/runDeps-nginx.txt && getent passwd
+ADD files/conf.d /etc/nginx/conf.d
+ADD files/html /usr/share/nginx/html
+RUN cat /root/runDeps-nginx.txt && getent passwd \
+    && chown -R www-data:www-data /usr/share/nginx/  /etc/nginx -v \
+    && ls -la /etc/nginx/conf.d
 
   EXPOSE 80 443
   #HEALTHCHECK --interval=10s --timeout=30s --start-period=15s --retries=2 CMD curl -f http://localhost:81/health || exit 1

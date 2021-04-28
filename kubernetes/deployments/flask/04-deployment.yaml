@@ -1,0 +1,50 @@
+####DEPLOYMENT flaskdeploy
+---
+apiVersion: apps/v1 
+kind: Deployment
+metadata:
+  name: flaskdeploy
+  namespace: prod-01
+  labels:
+    node.role: worker
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      node.role: worker
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        node.role: worker
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: type
+                operator: In
+                values:
+                - t2medium
+
+      hostname: flaskdeploy-hostname
+      subdomain: flaskdeploy-subdomain  
+      containers:
+      - name: flaskdeploy
+        image: localregistry.linux2be.com:1443/registry.gitlab.com/devops_containers/dockers/nginx:1.20.0
+        imagePullPolicy: Always
+        env:
+        - name: WORDPRESS_DB_HOST
+          value: cluster1-haproxy
+        ports:
+        - containerPort: 80
+          name: flaskdeploy
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      terminationGracePeriodSeconds: 30

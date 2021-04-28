@@ -1,0 +1,21 @@
+---
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: crawler
+spec:
+  schedule: "@hourly"
+  successfulJobsHistoryLimit: 0
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: crawler
+            image: gcr.io/YOUR_PROJECT_ID/example:b8886066cfa761cf858ce526b71513abbe1ac7c0
+            command: ["/example", "crawl"]
+            envFrom:
+            - configMapRef:
+                name: example-config
+          restartPolicy: Never
+---

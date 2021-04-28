@@ -1,0 +1,9 @@
+version: '2'
+services:
+  postgres13:
+    image: devsadds/postgres:13.2
+    build:
+      context: build/postgres13/.
+      args:
+        DOCKER_BASE_IMAGE: "postgres:13.2"
+    container_name: postgres13
