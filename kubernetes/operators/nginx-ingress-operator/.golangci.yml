@@ -1,0 +1,16 @@
+linters-settings:
+  misspell:
+    locale: US
+
+linters:
+    enable:
+    - goimports
+    - gosimple
+    - govet
+    - misspell
+    - gofmt
+    - unparam
+    - unconvert
+    - structcheck
+    - errcheck
+    disable-all: true

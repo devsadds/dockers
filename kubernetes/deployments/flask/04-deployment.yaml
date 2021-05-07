@@ -4,11 +4,11 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: flaskdeploy
-  namespace: prod-01
+  namespace: production
   labels:
     node.role: worker
 spec:
-  replicas: 3
+  replicas: 1
   selector:
     matchLabels:
       node.role: worker
@@ -27,24 +27,28 @@ spec:
           requiredDuringSchedulingIgnoredDuringExecution:
             nodeSelectorTerms:
             - matchExpressions:
-              - key: type
+              - key: node.role
                 operator: In
                 values:
-                - t2medium
+                - worker
 
-      hostname: flaskdeploy-hostname
-      subdomain: flaskdeploy-subdomain  
+      #hostname: flaskdeploy-hostname
+      #subdomain: flaskdeploy-subdomain  
       containers:
       - name: flaskdeploy
         image: localregistry.linux2be.com:1443/registry.gitlab.com/devops_containers/dockers/nginx:1.20.0
         imagePullPolicy: Always
-        env:
-        - name: WORDPRESS_DB_HOST
-          value: cluster1-haproxy
+        envFrom:
+          - configMapRef:
+              name: flask-config
         ports:
-        - containerPort: 80
-          name: flaskdeploy
-      dnsPolicy: ClusterFirst
+        - name: flask-80-tcp
+          containerPort: 80
+          #hostPort: 80
+        - name: flask-81-tcp
+          containerPort: 81
+          #hostPort: 81
+      #dnsPolicy: ClusterFirst
       restartPolicy: Always
       schedulerName: default-scheduler
       terminationGracePeriodSeconds: 30

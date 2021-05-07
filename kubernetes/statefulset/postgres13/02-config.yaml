@@ -1,0 +1,12 @@
+###CONFIGMAP
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-config
+  namespace: production
+  labels:
+    node.role: datebase
+data:
+  POSTGRES_DB: demopostgresdb
+  POSTGRES_USER: postgres
+  POSTGRES_PASSWORD: Kmsdksdkjjfdfdfdfdf

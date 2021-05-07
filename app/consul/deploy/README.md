@@ -28,7 +28,7 @@ Clone repositore with project
 
 ```sh
 mkdir -p /docker/deploy/consul-server
-git clone git@gitlab.com:devops_containers/dockers.git /tmp/dockers
+git clone https://gitlab.com/devops_containers/dockers.git /tmp/dockers
 rsync -a /tmp/dockers/app/consul/deploy/ /docker/deploy/consul-server/
 cd /docker/deploy/consul-server/
 ```
