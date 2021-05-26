@@ -13,8 +13,17 @@ if [ "${CONSUL_SERVER_CLUSTER_SIZE}" ];then
   "data_dir": "/consul/data",
   "datacenter": "${CONSUL_SERVER_DATACENTER:-dc1}",
   "server" : true,
-  "acl_default_policy":"allow",
-  "acl_down_policy":"extend-cache",
+  "acl": {
+    "enabled": ${CONSUL_ACL_ENABLED:-true},
+    "default_policy": ${CONSUL_ACL_DEFAULT_POLICY:-allow},
+    "enable_token_persistence": ${CONSUL_ACL_ENABLE_TOKEN_PERSISTENCE:-true},
+    "down_policy": "extend-cache",
+    "tokens": {
+      "agent": "${CONSUL_ACL_TOKENS_AGENT:-change_me}",
+      "agent_master": "${CONSUL_ACL_TOKENS_AGENT_MASTER:-change_me}",
+      "default": "${CONSUL_ACL_TOKENS_DEFAULT:-change_me}"
+    }
+  }, 
   "server_name" : "${CONSUL_SERVER_NAME:-server-bootstrap.service.consul}",
   "skip_leave_on_interrupt" : true,
   "leave_on_terminate" : true,
@@ -58,8 +67,17 @@ else
   "retry_join" : [
     "${CONSUL_SERVER_NETWORK_REJOIN_HOST:-consul}"
   ],
-  "acl_default_policy":"allow",
-  "acl_down_policy":"extend-cache",
+  "acl": {
+    "enabled": ${CONSUL_ACL_ENABLED:-true},
+    "default_policy": ${CONSUL_ACL_DEFAULT_POLICY:-allow},
+    "enable_token_persistence": ${CONSUL_ACL_ENABLE_TOKEN_PERSISTENCE:-true},
+    "down_policy": "extend-cache",
+    "tokens": {
+      "agent": "${CONSUL_ACL_TOKENS_AGENT:-change_me}",
+      "agent_master": "${CONSUL_ACL_TOKENS_AGENT_MASTER:-change_me}",
+      "default": "${CONSUL_ACL_TOKENS_DEFAULT:-change_me}"
+    }
+  }, 
   "server_name" : "${CONSUL_SERVER_NAME:-pxc.service.consul}",
   "skip_leave_on_interrupt" : true,
   "leave_on_terminate" : true,

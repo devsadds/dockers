@@ -1,0 +1,10 @@
+version: '2'
+services:
+  redis:
+    image: registry.gitlab.com/devops_containers/dockers/redis:6.2.3-buster
+    build: 
+      context: build/redis/.
+      args:
+        IMAGE_TAG: "redis:6.2.3-buster"
+    #entrypoint: tail -f /dev/null
+    container_name: redis

@@ -1,0 +1,10 @@
+version: '2'
+services:
+  awx_web:
+    image: registry.gitlab.com/devops_containers/dockers/awx_web:11.2.0
+    build: 
+      context: build/awx_web/.
+      args:
+        IMAGE_TAG: "ansible/awx_web:11.2.0"
+    #entrypoint: tail -f /dev/null
+    container_name: awx_web

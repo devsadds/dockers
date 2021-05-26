@@ -1,0 +1,10 @@
+version: '2'
+services:
+  pgloader:
+    image: registry.gitlab.com/devops_containers/dockers/pgloader:3.6.2
+    build: 
+      context: build/pgloader/.
+      args:
+        IMAGE_BASE: "dimitri/pgloader:latest"
+        APP_VERSION: "v3.6.2"
+    container_name: pgloader

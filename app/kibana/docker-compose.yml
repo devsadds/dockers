@@ -1,0 +1,9 @@
+version: '2'
+services:
+  kibana:
+    image: registry.gitlab.com/devops_containers/dockers/kibana:7.13.0
+    build: 
+      context: build/kibana/.
+      args:
+        IMAGE_TAG: "docker.elastic.co/kibana/kibana:7.13.0"
+    container_name: kibana

@@ -1,0 +1,10 @@
+version: '2'
+services:
+  awx:
+    image: registry.gitlab.com/devops_containers/dockers/awx:19.1.0
+    build: 
+      context: build/awx/.
+      args:
+        IMAGE_TAG: "quay.io/ansible/awx:19.1.0"
+    #entrypoint: tail -f /dev/null
+    container_name: awx

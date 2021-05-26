@@ -1,0 +1,10 @@
+version: '2'
+services:
+  openldap:
+    image: registry.gitlab.com/devops_containers/dockers/openldap:1.5.0
+    build: 
+      context: build/openldap/.
+      args:
+        IMAGE_BASE: "osixia/openldap:1.5.0"
+        APP_VERSION: "1.5.0"
+    container_name: openldap

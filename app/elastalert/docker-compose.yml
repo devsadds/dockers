@@ -1,0 +1,11 @@
+version: '2'
+services:
+  elastalert:
+    image: registry.gitlab.com/devops_containers/dockers/elastalert:0.2.4
+    build: 
+      context: build/elastalert/.
+      args:
+        APP_VERSION: "0.2.4"
+        BASE_IMAGE: "python:3.8-alpine"
+        RUN_USER: "human"
+    container_name: elastalert

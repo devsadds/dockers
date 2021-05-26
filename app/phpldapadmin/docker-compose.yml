@@ -1,0 +1,10 @@
+version: '2'
+services:
+  phpldapadmin:
+    image: registry.gitlab.com/devops_containers/dockers/phpldapadmin:1.5.0
+    build: 
+      context: build/phpldapadmin/.
+      args:
+        IMAGE_BASE: "osixia/phpldapadmin:stable"
+        APP_VERSION: "1.5.0"
+    container_name: phpldapadmin

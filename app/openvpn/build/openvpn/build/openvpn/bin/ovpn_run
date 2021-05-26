@@ -95,6 +95,8 @@ if [ $? = 0 ]; then
     sysctl -w net.ipv6.conf.default.forwarding=1 || echo "Failed to enable IPv6 Forwarding default"
     sysctl -w net.ipv6.conf.all.forwarding=1 || echo "Failed to enable IPv6 Forwarding"
 fi
-
+if [ ! -f "/etc/openvpn/vars" ];then
+    touch /etc/openvpn/vars
+fi
 echo "Running 'openvpn ${ARGS[@]} ${USER_ARGS[@]}'"
 exec openvpn ${ARGS[@]} ${USER_ARGS[@]}
