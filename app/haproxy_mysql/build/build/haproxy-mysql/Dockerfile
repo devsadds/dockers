@@ -33,6 +33,7 @@ RUN set -x \
 		liblua5.3-dev \
 		zlib1g-dev \
 		unzip \
+		#libpcre3-dev \
 	&& rm -rf /var/lib/apt/lists/* \
 	\
 	&& wget -O haproxy.tar.gz "$HAPROXY_URL" \
@@ -50,9 +51,10 @@ RUN set -x \
 		USE_OPENSSL=1 \
 		USE_PCRE2=1 USE_PCRE2_JIT=1 \
 		USE_ZLIB=1 \
+		USE_PROMEX=1 \
 		\
 		EXTRA_OBJS=" \
-			contrib/prometheus-exporter/service-prometheus.o \
+			 \
 		" \
 	' \
 	&& nproc="$(nproc)" \

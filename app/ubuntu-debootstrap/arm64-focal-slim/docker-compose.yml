@@ -1,0 +1,10 @@
+version: '2'
+services:
+  ubuntu-debootstrap:
+    image: registry.gitlab.com/devops_containers/dockers/ubuntu-debootstrap:arm64-focal-slim
+    build: 
+      context: build/arm64-focal-slim/.
+      args:
+        IMAGE_TAG: "multiarch/ubuntu-debootstrap:arm64-focal-slim"
+    #entrypoint: tail -f /dev/null
+    container_name: ubuntu-debootstrap

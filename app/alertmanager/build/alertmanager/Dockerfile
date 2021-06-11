@@ -7,4 +7,7 @@ RUN /bin/alertmanager --help \
 	&& chmod +x /usr/local/bin/alertmanager \
 	&& /usr/local/bin/alertmanager --help \
 	&& chown -R nobody /usr/local/bin/alertmanager
+COPY files/docker-entrypoint.sh /docker-entrypoint.sh
+RUN chmod +x /docker-entrypoint.sh
 USER nobody
+ENTRYPOINT ["/docker-entrypoint.sh"]

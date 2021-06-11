@@ -1,0 +1,9 @@
+version: '2'
+services:
+  curator:
+    image: registry.gitlab.com/devops_containers/dockers/curator:5.8.4
+    build: 
+      context: build/curator/.
+      args:
+        IMAGE_TAG: "alpine:3.6"
+    container_name: curator

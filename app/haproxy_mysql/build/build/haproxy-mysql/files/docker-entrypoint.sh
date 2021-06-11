@@ -215,7 +215,7 @@ logfile=/dev/null
 [program:haproxy]
 command=/usr/local/sbin/haproxy  -f /etc/haproxy/haproxy.conf  -p /usr/share/haproxy/haproxy.pid
 exitcodes=0,2
-stopsignal=SIGTERM
+stopsignal=SIGUSR1
 stopwaitsecs=10
 stopasgroup=false
 killasgroup=false

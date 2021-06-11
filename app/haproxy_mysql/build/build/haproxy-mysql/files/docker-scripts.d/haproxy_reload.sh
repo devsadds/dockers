@@ -1,17 +1,19 @@
 #!/bin/bash
 
 service_reload_haproxy(){
-	/usr/local/sbin/haproxy -c -V -f /etc/haproxy/haproxy.conf && kill -s SIGUSR1 $(ps aux | grep '/etc/haproxy/haproxy.conf' | grep -ve 'grep\|consul\|template' | awk '{print $2}')
-	#/usr/local/sbin/haproxy -c -V -f /etc/haproxy/haproxy.conf && /usr/local/sbin/haproxy -c -V -f /etc/haproxy/haproxy.conf  && /bin/kill -USR2 $(cat /usr/share/haproxy/haproxy.pid)
-}
+	code_check_config_haproxy=$(/usr/local/sbin/haproxy -c -V -f /etc/haproxy/haproxy.conf > /dev/null ; echo "return_code=$?" | awk -F= '{print $NF}')
+	if [[ "${code_check_config_haproxy}" == "0" ]];then
+		echo "Reload haproxy with sigkill"
+	    pids_haproxy=$(ps aux | grep '/etc/haproxy/haproxy.conf' | grep -ve 'grep\|consul\|template' | grep 'Sl' | awk '{print $2}')
+	    #supervisorctl restart haproxy
+	    for pid_haproxy in ${pids_haproxy};do
+	    	echo "exec kill -s SIGUSR1 ${pid_haproxy}"
+	        kill -s SIGUSR1 ${pid_haproxy}
+done
+	else
+		echo "Error during code_check_config_haproxy. $(/usr/local/sbin/haproxy -c -V -f /etc/haproxy/haproxy.conf). Status_Code = ${code_check_config_haproxy}"
+	fi
 
-service_reload_haproxy_iptables(){
-	iptables -I INPUT -p tcp --dport 3306 --syn -j DROP
-	iptables -I INPUT -p tcp --dport 3307 --syn -j DROP
-	sleep 1
-	supervisorctl -u login -p pass restart haproxy:*
-	iptables -D INPUT -p tcp --dport 3306 --syn -j DROP
-	iptables -D INPUT -p tcp --dport 3307 --syn -j DROP
 }
 
 
@@ -21,5 +23,3 @@ main(){
 	fi
 }
 main
-
-

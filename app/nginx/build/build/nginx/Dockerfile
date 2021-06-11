@@ -193,7 +193,7 @@ ADD files/nginx-logs-headers.conf /etc/nginx/nginx-logs-headers.conf
 ADD files/conf.d /etc/nginx/conf.d
 ADD files/html /usr/share/nginx/html
 ADD files/docker-entrypoint.sh /docker-entrypoint.sh
-ADD files/docker-entrypoint.sh /nginxReloader.sh
+ADD files/nginxReloader.sh /nginxReloader.sh
 RUN chmod +x /docker-entrypoint.sh  /nginxReloader.sh\
     && cat /root/runDeps-nginx.txt && getent passwd \
     && chown -R www-data:www-data /usr/share/nginx/  /etc/nginx -v \

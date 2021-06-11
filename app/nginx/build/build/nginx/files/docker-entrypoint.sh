@@ -1,5 +1,5 @@
 #!/bin/bash
 ###########
 
-/nginxReloader.sh &
+sh -c "/nginxReloader.sh &"
 exec "$@"
