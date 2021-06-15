@@ -1,0 +1,11 @@
+version: '2'
+services:
+  homer-webapp:
+    image: registry.gitlab.com/devops_containers/dockers/webapp:1.3.22
+    build: 
+      context: build/webapp/.
+      args:
+        APP_VERSION: "1.3.22"
+        BASE_IMAGE: "sipcapture/webapp:latest"
+        RUN_USER: "human"
+    container_name: homer-webapp

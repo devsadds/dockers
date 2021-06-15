@@ -1,0 +1,11 @@
+version: '2'
+services:
+  loki:
+    image: registry.gitlab.com/devops_containers/dockers/loki:2.2.1-ubuntu
+    build: 
+      context: build/loki/.
+      args:
+        APP_VERSION: "0.2.4"
+        BASE_IMAGE: "grafana/loki:2.2.1-amd64"
+        RUN_USER: "human"
+    container_name: loki

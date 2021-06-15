@@ -1,7 +1,9 @@
 ARG IMAGE_TAG
 FROM $IMAGE_TAG
-RUN apk --no-cache add python py-setuptools py-pip gcc libffi py-cffi python-dev libffi-dev py-openssl musl-dev linux-headers openssl-dev libssl1.0 && \
-    pip install elasticsearch-curator==5.8.4 && \
+ARG APP_VERSION
+ENV APP_VERSION $APP_VERSION
+RUN apk --no-cache add python bash py-setuptools py-pip gcc libffi py-cffi python-dev libffi-dev py-openssl musl-dev linux-headers openssl-dev libssl1.0 && \
+    pip install elasticsearch-curator==${APP_VERSION} && \
     pip install boto3==1.9.143 && \
     pip install requests-aws4auth==0.9 && \
     pip install cryptography==2.6.1 && \
@@ -10,6 +12,7 @@ RUN apk --no-cache add python py-setuptools py-pip gcc libffi py-cffi python-dev
     sed -i '/import sys/a import urllib3.contrib.pyopenssl' /usr/bin/curator && \
     sed -i '/import sys/a import urllib3' /usr/bin/curator
 COPY files/docker-entrypoint.sh /docker-entrypoint.sh
-RUN apk --no-cache  add bash ; chmod +x /docker-entrypoint.sh
+RUN chmod +x /docker-entrypoint.sh
+
 USER nobody:nobody
 ENTRYPOINT ["/docker-entrypoint.sh"]

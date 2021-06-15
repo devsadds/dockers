@@ -3,7 +3,7 @@ FROM $BASE_IMAGE
 ARG APP_VERSION
 ENV CRYPTOGRAPHY_DONT_BUILD_RUST "1"
 RUN apk --update upgrade && \
-    apk add gcc libffi-dev musl-dev python3-dev openssl-dev tzdata libmagic && \
+    apk add gcc bash libffi-dev musl-dev python3-dev openssl-dev tzdata libmagic && \
     rm -rf /var/cache/apk/* && \
     pip install elastalert==${APP_VERSION} && \
     apk del gcc libffi-dev musl-dev python3-dev openssl-dev

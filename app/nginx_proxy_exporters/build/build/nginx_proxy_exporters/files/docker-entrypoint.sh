@@ -4,8 +4,8 @@
 
 nginx_config_dir="/etc/nginx"
 
-exporter_node_url_default="172.45.0.11:9100"
-exporter_cadvisor_url_default="172.45.0.12:8080"
+exporter_node_url_default="172.30.0.11:9100"
+exporter_cadvisor_url_default="172.30.0.12:8080"
 exporter_heplify_server_url_default="heplify-server:9096"
 
 configs_create_nginx(){

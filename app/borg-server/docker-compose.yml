@@ -1,0 +1,11 @@
+version: '2'
+services:
+  borg-server:
+    image: registry.gitlab.com/devops_containers/dockers/borg-server:1.1.16-alpine-v1.0.1
+    build: 
+      context: build/borg-server-alpine/.
+      args:
+        APP_VERSION: "1.1.16-r1"
+        BASE_IMAGE: "alpine:edge"
+        RUN_USER: "human"
+    container_name: borg-server

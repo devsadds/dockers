@@ -1,0 +1,16 @@
+# default: on
+# description: clustercheck
+service clustercheck
+{
+	disable = no
+	flags = REUSE
+	socket_type = stream
+	port = 9201
+	wait = no
+	user = clustchk
+	server = /usr/bin/clustercheck
+	server_args = {{mysql_user}} {{mysql_pass}}
+	log_on_failure += USERID
+	only_from = 0.0.0.0/0
+	per_source = UNLIMITED
+}
