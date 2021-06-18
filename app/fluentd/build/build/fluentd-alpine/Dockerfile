@@ -9,7 +9,6 @@ ENV LD_PRELOAD=""
 ENV DUMB_INIT_SETSID 0
 
 RUN apk update \
-    && apk upgrade \
     && apk add --no-cache \
            ca-certificates \
            supervisor \
@@ -26,6 +25,8 @@ RUN apk update \
            su-exec \
            dumb-init \
            curl \
+           bash \
+           bash-completion \
     && apk add --no-cache --virtual .build-deps \
            build-base \
            ruby-dev \

@@ -3,11 +3,11 @@ version: '3.8'
 services:
 
   haproxy-postgres:
-    image: devsadds/haproxy-postgres:2.3.5-v1.3.1
+    image: devsadds/haproxy-postgres:2.4.0-v1.3.1
     build: 
       context: build/haproxy-postgres/.
       args:
-        BASE_IMAGE : "devsadds/haproxy-mysql:2.3.5_consul-1.9.3_consul-template-0.25.1-v1.3.1"
+        BASE_IMAGE : "devsadds/haproxy-mysql:2.4.0_consul_v1.0.2"
     environment:
       HAPROXY_TIMEOUT_CLIENT: "1h"
       HAPROXY_TIMEOUT_SERVER: "1h"

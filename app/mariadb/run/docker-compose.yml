@@ -1,0 +1,61 @@
+version: '2.1'
+
+services:
+  mariadb-master:
+    image: registry.gitlab.com/devops_containers/dockers/bitnami-docker-mariadb-10.5:v1.1.0
+    ports:
+      - '3306:3306'
+    volumes:
+      - 'mariadb_master_data:/bitnami/mariadb'
+    environment:
+
+      MARIADB_USER: "my_user"
+      MARIADB_DATABASE: "my_database"
+      MARIADB_PASSWORD: "my_root_password2"
+      MARIADB_ROOT_PASSWORD: "my_root_password"
+      ###replication"
+      MARIADB_REPLICATION_MODE: "master"
+      MARIADB_REPLICATION_USER: "repl_user"
+      MARIADB_REPLICATION_PASSWORD: "rep12121212eewwe"
+      MARIADB_EXTRA_FLAGS: "--join_buffer_size=512k -thread_pool_size=32 --innodb_buffer_pool_instances=6 --innodb_log_buffer_size=16M --innodb_log_file_size=8G --performance_schema=on --innodb_lock_wait_timeout=100 --max-connect-errors=4294967295 --max_connections=300 --max_allowed_packet=128M --sql_mode=TRADITIONAL --innodb_buffer_pool_size=32G --interactive_timeout=28800 --net_read_timeout=120 --net_write_timeout=120"
+    healthcheck:
+      test: ['CMD', '/opt/bitnami/scripts/mariadb/healthcheck.sh']
+      interval: 15s
+      timeout: 5s
+      retries: 6
+
+
+  mariadb-slave:
+    image: registry.gitlab.com/devops_containers/dockers/bitnami-docker-mariadb-10.5:v1.1.0
+    ports:
+      - '3307:3306'
+    depends_on:
+      - mariadb-master
+    volumes:
+      - 'mariadb_slave_data:/bitnami/mariadb'
+    environment:
+      MARIADB_USER: "my_user"
+      MARIADB_DATABASE: "my_database"
+      MARIADB_PASSWORD: "my_root_password2"
+      MARIADB_ROOT_PASSWORD: "my_root_password"
+      ###replication"
+      MARIADB_REPLICATION_MODE: "slave"
+      MARIADB_REPLICATION_USER: "repl_user"
+      MARIADB_REPLICATION_PASSWORD: "rep12121212eewwe"
+      MARIADB_MASTER_HOST: "mariadb-master"
+      MARIADB_MASTER_PORT_NUMBER: "3306"
+      MARIADB_MASTER_ROOT_PASSWORD: "my_root_password"
+      MARIADB_EXTRA_FLAGS: "--innodb_lock_wait_timeout=100 --max-connect-errors=4294967295 --max_connections=300 --max_allowed_packet=128M --sql_mode=TRADITIONAL --innodb_buffer_pool_size=32G --interactive_timeout=28800 --net_read_timeout=120 --net_write_timeout=120"
+
+    healthcheck:
+      test: ['CMD', '/opt/bitnami/scripts/mariadb/healthcheck.sh']
+      interval: 15s
+      timeout: 5s
+      retries: 6
+
+volumes:
+  mariadb_master_data:
+    driver: local
+  mariadb_slave_data:
+    driver: local
+

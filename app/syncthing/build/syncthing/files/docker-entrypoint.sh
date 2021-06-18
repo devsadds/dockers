@@ -1,0 +1,1 @@
+/usr/local/bin/alertmanager --log.level=debug --config.file=/etc/alertmanager/alertmanager.yml

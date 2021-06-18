@@ -1,0 +1,9 @@
+version: '2'
+services:
+  syncthing:
+    image: registry.gitlab.com/devops_containers/dockers/syncthing:v1.17.0
+    build: 
+      context: build/syncthing/.
+      args:
+        IMAGE_TAG: "linuxserver/syncthing:version-v1.17.0"
+    container_name: syncthing

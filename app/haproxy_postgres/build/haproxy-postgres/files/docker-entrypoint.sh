@@ -50,7 +50,7 @@ global
     stats socket ipv4@127.0.0.1:9999 level admin
     stats socket /usr/share/haproxy/hapee-lb.sock mode 666 level admin
     stats timeout 2m
-    daemon
+    #daemon
 resolvers consul
   	nameserver consul localhost:8600
   	accepted_payload_size 8192
@@ -206,10 +206,10 @@ logfile=/dev/null
 
 
 [program:haproxy]
-command=/usr/local/sbin/haproxy  -f /etc/haproxy/haproxy.conf  -p /usr/share/haproxy/haproxy.pid
+command=/usr/local/sbin/haproxy  -f /etc/haproxy/haproxy.conf
 exitcodes=0,2
 stopsignal=SIGTERM
-stopwaitsecs=10
+stopwaitsecs=2
 stopasgroup=false
 killasgroup=false
 autostart=true
@@ -260,10 +260,10 @@ supervisord_run(){
 main(){
 	prepare
 	s_consul_agent
-	d_harpoxy
+	#d_harpoxy
 	s_consul_template
 	s_exporter_haproxy
-	#s_harpoxy
+	s_harpoxy
 	supervisord_run
 }
 

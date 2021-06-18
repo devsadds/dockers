@@ -1,7 +1,7 @@
 version: '2'
 services:
   curator:
-    image: registry.gitlab.com/devops_containers/dockers/curator:5.8.4-v1.0.0
+    image: registry.gitlab.com/devops_containers/dockers/curator:5.8.4-v1.0.1
     build: 
       context: build/curator/.
       args:

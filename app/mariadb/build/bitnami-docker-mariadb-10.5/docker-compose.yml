@@ -1,0 +1,10 @@
+version: '2'
+services:
+  bitnami-docker-mariadb-10.5:
+    image: registry.gitlab.com/devops_containers/dockers/bitnami-docker-mariadb-10.5:v1.1.1
+    build: 
+      context: build/bitnami-docker-mariadb-10.5/.
+      args:
+        IMAGE_TAG: "docker.io/bitnami/minideb:buster"
+    container_name: bitnami-docker-mariadb-10.5
+

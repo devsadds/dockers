@@ -41,7 +41,7 @@ if [ -z "${CONSUL_SERVICE}" ];then
   CONSUL_SERVICE="pxc"
 fi
 
-if [ -z "${CONSUL_AGENT_SLEEP_TIME}" ];then
+if [ -z "${CONSUL_AGENT_SLEEP_TIME:-6}" ];then
   CONSUL_AGENT_SLEEP_TIME="20"
 fi
 
@@ -66,7 +66,7 @@ echo "DISCOVERY_SERVICE=$DISCOVERY_SERVICE"
 echo "CONSUL_SERVICE=$CONSUL_SERVICE"
 echo "MYSQL_ERROR_LOG_DIR = $MYSQL_ERROR_LOG_DIR"
 echo "XTRABACKUP_PASSWORD = $XTRABACKUP_PASSWORD"
-echo "CONSUL_AGENT_SLEEP_TIME=${CONSUL_AGENT_SLEEP_TIME}"
+echo "CONSUL_AGENT_SLEEP_TIME=${CONSUL_AGENT_SLEEP_TIME:-6}"
 echo
 
 
@@ -102,16 +102,16 @@ func_consul_agent_start(){
   echo "------------------------------------"
   echo "exec /bin/consul agent -retry-join $DISCOVERY_SERVICE -client 0.0.0.0 -bind $ipaddr -node $SERVER_NAME-$hostname -data-dir /tmp -config-format json -config-file /tmp/pxc.json &"
   echo "------------------------------------"
-  echo "Sleep for ${CONSUL_AGENT_SLEEP_TIME} seconds after agent start" && progress-bar ${CONSUL_AGENT_SLEEP_TIME}
+  echo "Sleep for ${CONSUL_AGENT_SLEEP_TIME:-6} seconds after agent start" && progress-bar ${CONSUL_AGENT_SLEEP_TIME:-6}
   if [[ $(ps aux | grep "consul.*agent" | grep -ve 'grep') == "" ]];then
       /bin/consul agent -retry-join $DISCOVERY_SERVICE -client 0.0.0.0 -bind $ipaddr -node $SERVER_NAME-$hostname -data-dir /tmp -config-file /tmp/pxc.json 2>&1 & disown;
-      echo "Sleep for ${CONSUL_AGENT_SLEEP_TIME} seconds after agent start" && progress-bar ${CONSUL_AGENT_SLEEP_TIME}
+      echo "Sleep for ${CONSUL_AGENT_SLEEP_TIME:-6} seconds after agent start" && progress-bar ${CONSUL_AGENT_SLEEP_TIME:-6}
   else
       echo "consul agent already running"
   fi
 
 
-echo "End func ${FUNCNAME[0]}" 
+  echo "End func ${FUNCNAME[0]}" 
 }
 
 funct_join() {
