@@ -3,14 +3,24 @@
 PG_DB_USER="$1"
 PG_DB_USER_PASS="$2"
 PG_DB_NAME="$3"
+
+
+export pg_password=$(export | grep "POS.*_PAS.*$" | head -n1  | awk -F "=" '{print $2}' | sed 's/^.//' | sed 's/.$//' )
+export pg_user=$(export | grep "POS.*_USER.*$"  | awk 'END{print}' | awk -F "=" '{print $2}' | sed 's|\"||g'   | head -n 1)
+if [ -z "$pg_user" ];then
+    echo "pg_user undefined - fallback to user = postgres"
+    pg_user="postgres"
+fi
+echo "pg_password=$pg_password"
+echo "pg_user=$pg_user"
 ##############
-function help_usage(){
+help_usage(){
 	echo "USAGE: scriptname PG_DB_USER  PG_DB_USER_PASS PG_DB_NAME"
 	echo "EXAMPLE:  /bin/bash /docker-entrypoint-initdb.d/02-create-db.sh \"user1\" \"123123\" \"test_db\""
 }
 
 
-function check_variables() {
+check_variables() {
 pattern=$'*( |\t)'
 if [[ ${PG_DB_USER} = $pattern ]]; then
     echo "First parameter PG_DB_USER has no non-whitespace characters"
@@ -28,29 +38,32 @@ fi
 
 
 
-function create_db() {
+create_db() {
 echo "Creating user ${PG_DB_USER} with password ${PG_DB_USER_PASS}"
 echo "GRANT PRIVILEGES ON ${PG_DB_NAME} to USER ${PG_DB_USER}"
+echo "From PGPASSWORD=${pg_password} psql -v --username ${pg_user}"
 
-
-psql -v --username "$POSTGRES_USER" <<-EOSQL
+PGPASSWORD=${pg_password} psql  --username "${pg_user}" <<-EOSQL
 create role "${PG_DB_USER}" with password '${PG_DB_USER_PASS}' login;
-CREATE DATABASE "${PG_DB_NAME}" WITH OWNER "${PG_DB_USER}" ENCODING 'UTF8'  LC_COLLATE 'ru_RU.UTF-8' LC_CTYPE 'ru_RU.utf8' TEMPLATE template0;
+CREATE DATABASE "${PG_DB_NAME}" WITH OWNER "${PG_DB_USER}" ENCODING 'UTF8' TEMPLATE template0;
 GRANT ALL PRIVILEGES on DATABASE "${PG_DB_NAME}" to "${PG_DB_USER}";
 EOSQL
 
 }
 
 
-function create_extensions() {
-EXTENSIONS=$(echo ${POSTGRES_EXTENSIONS} | tr "," "\n")
-echo "Creating postgres extension with list ${POSTGRES_EXTENSIONS}"
+create_extensions() {
+    if [[ -z ${EXTENSIONS} ]];then 
+      EXTENSIONS=$(echo ${POSTGRES_EXTENSIONS} | tr "," "\n")
+      echo "Creating postgres extension with list ${POSTGRES_EXTENSIONS}"
 for EXTENSION in ${EXTENSIONS}
 do
             echo "Create extension ${EXTENSION} in ${PG_DB_NAME}";
-            psql  -qAt -c "CREATE EXTENSION IF NOT EXISTS \"${EXTENSION}\";" "${PG_DB_NAME}"
+            PGPASSWORD=${pg_password} psql --username "${pg_user}" -qAt -c "CREATE EXTENSION IF NOT EXISTS \"${EXTENSION}\";" "${PG_DB_NAME}"
 done
-
+else
+   echo "Skip create extensions"
+fi
 }
 
 ##############
@@ -58,4 +71,4 @@ help_usage
 check_variables
 create_db
 create_extensions
-#/bin/bash /docker-entrypoint-initdb.d/02-create-db.sh "user1" "123123" "test_db"
+#/bin/bash /pgscripts/02-create-db.sh "user1" "123123" "test_db"

@@ -3,15 +3,15 @@ START_ARG="${1}"
 ipaddr=$(ifconfig "${SERVER_INTERFACE_BIND:-eth0}" | grep 'inet' | awk '{print $2}')
 hostname=$(hostname)
 version_postgres=$(psql --version | awk '{print $NF}')
-trigger_file="standby.signal"
 
-if [[ -f "${POSTGRESQL_DATA_DIR}/${trigger_file}" ]];then
-  echo "File ${POSTGRESQL_DATA_DIR}/${trigger_file} exist.Become standby"
-  ls -la ${POSTGRESQL_DATA_DIR}/${trigger_file}
+
+if [[ -f "${PROMOTE_TRIGGER_FILE:-/tmp/postgresql.trigger.5432}" ]];then
+  echo "File ${PROMOTE_TRIGGER_FILE:-/tmp/postgresql.trigger.5432} exist.Become standby"
+  ls -la ${PROMOTE_TRIGGER_FILE:-/tmp/postgresql.trigger.5432}
   server_role="standby"
 else
-  echo "File ${POSTGRESQL_DATA_DIR}/${trigger_file} not exist. Become master"
-  ls -la ${POSTGRESQL_DATA_DIR}/${trigger_file} || echo "File ${POSTGRESQL_DATA_DIR}/${trigger_file}  not exist"
+  echo "File ${PROMOTE_TRIGGER_FILE:-/tmp/postgresql.trigger.5432} not exist. Become master"
+  ls -la ${PROMOTE_TRIGGER_FILE:-/tmp/postgresql.trigger.5432} || echo "File ${PROMOTE_TRIGGER_FILE:-/tmp/postgresql.trigger.5432}  not exist"
   server_role="master"
 fi
 

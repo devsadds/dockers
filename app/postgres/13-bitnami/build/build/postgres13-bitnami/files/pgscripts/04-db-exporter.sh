@@ -3,9 +3,18 @@
 POSTGRES_USER="postgres"
 set -e
 ##############
-function exporter_add() {
+export pg_password=$(export | grep "POS.*_PAS.*$" | head -n1  | awk -F "=" '{print $2}' | sed 's/^.//' | sed 's/.$//' )
+export pg_user=$(export | grep "POS.*_USER.*$"  | awk 'END{print}' | awk -F "=" '{print $2}' | sed 's|\"||g'   | head -n 1)
+if [ -z "$pg_user" ];then
+    echo "pg_user undefined - fallback to user = postgres"
+    pg_user="postgres"
+fi
+echo "pg_password=$pg_password"
+echo "pg_user=$pg_user"
 
-psql -v --username "$POSTGRES_USER" <<-EOSQL
+
+exporter_add() {
+PGPASSWORD=${pg_password} psql  --username ${pg_user} <<-EOSQL
 
 CREATE USER postgres_exporter PASSWORD 'kiokfhubhlundsfjbdsufdsf';
 alter user postgres_exporter with password 'kiokfhubhlundsfjbdsufdsf';

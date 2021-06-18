@@ -30,6 +30,7 @@ ENV BITNAMI_APP_NAME="postgresql" \
 COPY files/bashrc_alias.sh /usr/sbin/bashrc_alias.sh
 COPY files/initbash_profile.sh /usr/sbin/initbash_profile
 COPY files/docker-entrypoint.d /docker-entrypoint.d/
+COPY files/pgscripts /pgscripts/
 RUN apt-get update && apt install -y \
         libnet-ifconfig-wrapper-perl/stable \
         wget unzip nano  curl iproute2 net-tools iputils-ping \
@@ -41,7 +42,8 @@ RUN apt-get update && apt install -y \
     && rm consul_${CONSUL_VERSION:-1.9.6}_linux_amd64.zip \
     && apt remove -y unzip wget \
     && ln -sf /opt/bitnami/postgresql/bin/pg_dump /usr/bin/pg_dump \
-    && sed -i '/#set -o xtrace/a bash /docker-entrypoint.d/consul_agent.sh' /opt/bitnami/scripts/postgresql/entrypoint.sh
+    && sed -i '/#set -o xtrace/a bash /docker-entrypoint.d/consul_agent.sh' /opt/bitnami/scripts/postgresql/entrypoint.sh \
+    && chmod 777 -R -v /pgscripts/
 
 VOLUME [ "/bitnami/postgresql", "/docker-entrypoint-initdb.d", "/docker-entrypoint-preinitdb.d" ]
 

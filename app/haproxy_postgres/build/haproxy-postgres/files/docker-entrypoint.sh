@@ -111,7 +111,9 @@ backend writer-back
 {{if .Tags | contains "master"}}
 	server ${DISCOVERY_SERVICE_NAME_POSTGRES_WRITER:-postgres-12-repmgr}_writer-{{.Node}} {{.Address}}:{{.Port}} check port {{.Port}} maxconn ${HAPROXY_POSTGRES_BACKEND_MAX_CONN:-100}{{end}}
 {{end}}
-
+{{if .Tags | contains "standby"}}
+	server ${DISCOVERY_SERVICE_NAME_POSTGRES_READER:-postgres-12-repmgr}_reader-{{.Node}} {{.Address}}:{{.Port}} backup check port {{.Port}} maxconn ${HAPROXY_POSTGRES_BACKEND_MAX_CONN:-100}{{end}}
+{{end}}
 
 backend reader-back
 	balance leastconn
@@ -208,7 +210,7 @@ logfile=/dev/null
 [program:haproxy]
 command=/usr/local/sbin/haproxy  -f /etc/haproxy/haproxy.conf
 exitcodes=0,2
-stopsignal=SIGTERM
+stopsignal=QUIT
 stopwaitsecs=2
 stopasgroup=false
 killasgroup=false
@@ -270,3 +272,4 @@ main(){
 main
 
 
+#kill -s TERM $(ps aux | grep 'haproxy.conf' | grep -ve 'color' | grep Ssl | awk '{ print $2}')

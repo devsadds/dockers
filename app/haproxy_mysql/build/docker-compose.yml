@@ -3,12 +3,12 @@ version: '3.8'
 services:
 
   haproxy:
-    image: devsadds/haproxy-mysql:2.4.0_consul_v1.0.2
+    image: devsadds/haproxy-mysql:2.4.1_consul_v1.0.2
     build: 
       context: build/haproxy-mysql/.
       args:
         BASE_IMAGE : "ubuntu:bionic"
-        APP_VER: "2.4.0"
+        APP_VER: "2.4.1"
         CONSUL_VERSION: "1.9.4"
         CONSUL_TEMPLATE_VERSION: "0.25.2"
         VERSION_EXPORTER_HAPROXY: "0.12.0"

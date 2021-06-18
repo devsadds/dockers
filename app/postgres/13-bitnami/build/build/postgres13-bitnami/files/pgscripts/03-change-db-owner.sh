@@ -3,7 +3,14 @@
 PG_DB_USER=$1
 PG_DB_NAME=$2
 ##############
-
+export pg_password=$(export | grep "POS.*_PAS.*$" | head -n1  | awk -F "=" '{print $2}' | sed 's/^.//' | sed 's/.$//' )
+export pg_user=$(export | grep "POS.*_USER.*$"  | awk 'END{print}' | awk -F "=" '{print $2}' | sed 's|\"||g'   | head -n 1)
+if [ -z "$pg_user" ];then
+    echo "pg_user undefined - fallback to user = postgres"
+    pg_user="postgres"
+fi
+echo "pg_password=$pg_password"
+echo "pg_user=$pg_user"
 
 PG_TYPES=" \
 _acc_entry_type \
@@ -104,12 +111,12 @@ fi
 
 rights_db() {
     echo "Изменяем владельца базы ${PG_DB_NAME} на  ${PG_DB_USER}"
-for tbl in `psql    -qAt -c "select tablename from pg_tables where schemaname = 'public';" ${PG_DB_NAME}` \
-           `psql    -qAt -c "select sequence_name from information_schema.sequences where sequence_schema = 'public';" ${PG_DB_NAME}` \
-           `psql    -qAt -c "select table_name from information_schema.views where table_schema = 'public';" ${PG_DB_NAME}` ;
+for tbl in `PGPASSWORD=${pg_password} psql  --username ${pg_user} -qAt -c "select tablename from pg_tables where schemaname = 'public';" ${PG_DB_NAME}` \
+           `PGPASSWORD=${pg_password} psql  --username ${pg_user} -qAt -c "select sequence_name from information_schema.sequences where sequence_schema = 'public';" ${PG_DB_NAME}` \
+           `PGPASSWORD=${pg_password} psql  --username ${pg_user} -qAt -c "select table_name from information_schema.views where table_schema = 'public';" ${PG_DB_NAME}` ;
 do
-	  echo "ALTER TABLE $tbl in DATABASE ${PG_DB_NAME} TO USER ${PG_DB_USER}"
-    psql   -c "alter table \"$tbl\" owner to \"${PG_DB_USER}\"" ${PG_DB_NAME} ;
+	echo "ALTER TABLE $tbl in DATABASE ${PG_DB_NAME} TO USER ${PG_DB_USER}"
+    PGPASSWORD=${pg_password} psql  --username ${pg_user} -c"alter table \"$tbl\" owner to \"${PG_DB_USER}\"" ${PG_DB_NAME} ;
 done
 
 }
@@ -117,37 +124,37 @@ done
 
 rights_db_reports() {
     echo "Изменяем владельца базы ${PG_DB_NAME} на  ${PG_DB_USER}"
-for tbl in `psql    -qAt -c "select tablename from pg_tables where schemaname = 'reports';" ${PG_DB_NAME}` \
-           `psql    -qAt -c "select sequence_name from information_schema.sequences where sequence_schema = 'reports';" ${PG_DB_NAME}` \
-           `psql    -qAt -c "select table_name from information_schema.views where table_schema = 'reports';" ${PG_DB_NAME}` ;
+for tbl in `PGPASSWORD=${pg_password} psql  --username ${pg_user} -qAt -c "select tablename from pg_tables where schemaname = 'reports';" ${PG_DB_NAME}` \
+           `PGPASSWORD=${pg_password} psql  --username ${pg_user} -qAt -c "select sequence_name from information_schema.sequences where sequence_schema = 'reports';" ${PG_DB_NAME}` \
+           `PGPASSWORD=${pg_password} psql  --username ${pg_user} -qAt -c "select table_name from information_schema.views where table_schema = 'reports';" ${PG_DB_NAME}` ;
 do
     echo "ALTER TABLE $tbl in DATABASE ${PG_DB_NAME} TO USER ${PG_DB_USER}"
-    psql   -c "alter table \"$tbl\" owner to \"${PG_DB_USER}\"" ${PG_DB_NAME} ;
+    PGPASSWORD=${pg_password} psql  --username ${pg_user} -c"alter table \"$tbl\" owner to \"${PG_DB_USER}\"" ${PG_DB_NAME} ;
 done
 }
 
 rights_func() {
   IFS=$'\n'
-for fnc in `psql -qAt -c "SELECT  '\"' || p.proname||'\"' || '(' || pg_catalog.pg_get_function_identity_arguments(p.oid) || ')' FROM pg_catalog.pg_namespace n JOIN pg_catalog.pg_proc p ON p.pronamespace = n.oid WHERE n.nspname = 'public';" ${PG_DB_NAME}`
+for fnc in `PGPASSWORD=${pg_password} psql  --username ${pg_user} -qAt -c "SELECT  '\"' || p.proname||'\"' || '(' || pg_catalog.pg_get_function_identity_arguments(p.oid) || ')' FROM pg_catalog.pg_namespace n JOIN pg_catalog.pg_proc p ON p.pronamespace = n.oid WHERE n.nspname = 'public';" ${PG_DB_NAME}`
 do
   echo "ALTER function $fnc in DATABASE ${PG_DB_NAME} TO USER ${PG_DB_USER}"
-  psql -c "alter function $fnc owner to \"${PG_DB_USER}\"" ${PG_DB_NAME} ;
+  PGPASSWORD=${pg_password} psql  --username ${pg_user} -c "alter function $fnc owner to \"${PG_DB_USER}\"" ${PG_DB_NAME} ;
 done
 }
 
 rights_func_reports() {
 
-  psql -c "ALTER SCHEMA reports OWNER TO \"${PG_DB_USER}\"" ${PG_DB_NAME} ;
-  psql -c "ALTER SCHEMA public OWNER TO \"${PG_DB_USER}\"" ${PG_DB_NAME} ;
+  PGPASSWORD=${pg_password} psql  --username ${pg_user} -c "ALTER SCHEMA reports OWNER TO \"${PG_DB_USER}\"" ${PG_DB_NAME} ;
+  PGPASSWORD=${pg_password} psql  --username ${pg_user} -c "ALTER SCHEMA public OWNER TO \"${PG_DB_USER}\"" ${PG_DB_NAME} ;
 
 }
 
 rights_db_mat_view() {
 
-for view_name_postgres in $(psql -qAt --dbname=${PG_DB_NAME} -c "SELECT oid::regclass::text FROM pg_class WHERE  relkind = 'm';")
+for view_name_postgres in $(PGPASSWORD=${pg_password} psql  --username ${pg_user} -qAt --dbname=${PG_DB_NAME} -c "SELECT oid::regclass::text FROM pg_class WHERE  relkind = 'm';")
 do
     echo "ALTER mat view role ${view_name_postgres} in ${PG_DB_NAME} TO USER ${PG_DB_USER}"
-    psql  -qAt --dbname=${PG_DB_NAME} -c  "ALTER MATERIALIZED VIEW  \"${view_name_postgres}\" OWNER TO \"${PG_DB_USER}\"";
+    PGPASSWORD=${pg_password} psql  --username ${pg_user} -qAt --dbname=${PG_DB_NAME} -c  "ALTER MATERIALIZED VIEW  \"${view_name_postgres}\" OWNER TO \"${PG_DB_USER}\"";
 
 done
 }
@@ -157,7 +164,7 @@ rights_db_pg_type(){
   for PG_TYPE in $(echo ${PG_TYPES} | tr '\n' ' ')
   do
     echo "alter type ${PG_TYPE}  owner to ${PG_DB_USER} in ${PG_DB_NAME}"
-    psql  -c "ALTER TYPE \"${PG_TYPE}\" OWNER TO \"${PG_DB_USER}\""  ${PG_DB_NAME} || (echo "ok")
+    PGPASSWORD=${pg_password} psql  --username ${pg_user} -c "ALTER TYPE \"${PG_TYPE}\" OWNER TO \"${PG_DB_USER}\""  ${PG_DB_NAME} || (echo "ok")
   done
 }
 
@@ -165,7 +172,7 @@ main() {
 
 help_usage
 check_variables
-rights_func_reports
+#rights_func_reports
 rights_db
 #rights_db_reports
 rights_func
