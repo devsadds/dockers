@@ -1,0 +1,10 @@
+version: '2'
+services:
+  exporter_mysql:
+    image: registry.gitlab.com/devops_containers/dockers/exporter_mysql:v0.13.0
+    build: 
+      context: build/exporter_mysql/.
+      args:
+        IMAGE_TAG: "prom/mysqld-exporter:v0.13.0"
+        APP_VERSION: "0.13.0"
+    container_name: exporter_mysql

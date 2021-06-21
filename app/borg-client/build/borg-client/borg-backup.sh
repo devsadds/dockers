@@ -106,15 +106,20 @@ borg_prune(){
     fi
 }
 
+
 borg_list(){
     echo "Run ${FUNCNAME[ 0 ]}"
     echo "Run borg list \"${BORG_REPO_REMOTE_URL}/./${BORG_REPO_NAME}\""
     borg list "${BORG_REPO_REMOTE_URL}/./${BORG_REPO_NAME}"
 }
+
 borg_check(){
     echo "Run ${FUNCNAME[ 0 ]}"
     sleep 1;
+    echo "Exec borg check -v --show-rc --save-space  --prefix=${BORG_ARCHIVE}-"
     borg check -v --show-rc --save-space  --prefix="${BORG_ARCHIVE}-" 
+
+#data-2021_06_21__04_59_39
 }
 
 borg_default(){
@@ -126,14 +131,15 @@ borg_default(){
 
 main(){
     precheck
-    borg_prepare
+    
     #borg_precheck
     if [[ "${BORG_ACTION}" == "init" ]];then
+        borg_prepare
         borg_init
     fi
     if [[ "${BORG_ACTION}" == "create" ]];then
+        borg_prepare
         borg_create || error_handler
-        #borg_prune
         borg_list
     fi
     if [[ "${BORG_ACTION}" == "prune" ]];then
@@ -144,7 +150,11 @@ main(){
         borg_check || error_handler
         borg_list
     fi
+    if [[ "${BORG_ACTION}" == "list" ]];then
+        borg_list || error_handler
+    fi
     if [[ "${BORG_ACTION}" == "" ]];then
+        echo ""
         borg_default || error_handler
     fi
 }

@@ -111,6 +111,7 @@ backend writer-back
 {{if .Tags | contains "master"}}
 	server ${DISCOVERY_SERVICE_NAME_POSTGRES_WRITER:-postgres-12-repmgr}_writer-{{.Node}} {{.Address}}:{{.Port}} check port {{.Port}} maxconn ${HAPROXY_POSTGRES_BACKEND_MAX_CONN:-100}{{end}}
 {{end}}
+{{range \$index, \$element := service "${DISCOVERY_SERVICE_NAME_POSTGRES_READER:-postgres-12-repmgr}"}}
 {{if .Tags | contains "standby"}}
 	server ${DISCOVERY_SERVICE_NAME_POSTGRES_READER:-postgres-12-repmgr}_reader-{{.Node}} {{.Address}}:{{.Port}} backup check port {{.Port}} maxconn ${HAPROXY_POSTGRES_BACKEND_MAX_CONN:-100}{{end}}
 {{end}}

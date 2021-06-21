@@ -6,7 +6,9 @@ nginx_config_dir="/etc/nginx"
 
 exporter_node_url_default="172.30.0.11:9100"
 exporter_cadvisor_url_default="172.30.0.12:8080"
+exporter_mysql_url_default="172.30.0.13:9104"
 exporter_heplify_server_url_default="heplify-server:9096"
+
 
 configs_create_nginx(){
  
@@ -73,6 +75,25 @@ fi
 }
 
 
+config_exporter_mysql(){
+
+if [[ ! -f "/etc/nginx/services.d/exporter_mysql.conf" ]];then
+  
+  cat <<OEF> /etc/nginx/services.d/exporter_mysql.conf
+  server {
+  listen 9104;
+  
+  location / {
+    include exporters-access.conf;
+    proxy_pass   http://${EXPORTER_MYSQL_URL:-$exporter_mysql_url_default}/;
+  }
+
+}
+OEF
+
+fi
+}
+
 
 config_exporter_heplify_server(){
 
@@ -102,6 +123,9 @@ fi
 }
 
 
+
+
+
 nginx_run(){
 	exec $(which nginx) -c ${nginx_config_dir}/nginx.conf -g "daemon off;" ${EXTRA_ARGS}
 }
@@ -111,6 +135,7 @@ main(){
 	configs_create_nginx
 	config_exporter_node
 	config_exporter_cadvisor
+  config_exporter_mysql
 	config_exporter_heplify_server
 	nginx_run
 }
