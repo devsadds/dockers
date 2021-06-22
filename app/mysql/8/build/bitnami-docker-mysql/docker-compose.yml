@@ -1,0 +1,11 @@
+version: '2'
+services:
+  bitnami-docker-mysql-8:
+    image: registry.gitlab.com/devops_containers/dockers/bitnami-docker-mysql-8:v1.1.1
+    build: 
+      context: build/bitnami-docker-mysql-8/.
+      args:
+        IMAGE_TAG: "docker.io/bitnami/minideb:buster"
+        CONSUL_VERSION: "1.9.6"
+    container_name: bitnami-docker-mysql-8
+
