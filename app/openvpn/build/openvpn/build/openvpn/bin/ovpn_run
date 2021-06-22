@@ -97,6 +97,80 @@ if [ $? = 0 ]; then
 fi
 if [ ! -f "/etc/openvpn/vars" ];then
     touch /etc/openvpn/vars
+else
+    echo "File /etc/openvpn/vars exist"
+
 fi
+
+
+
+openvpn_run(){
 echo "Running 'openvpn ${ARGS[@]} ${USER_ARGS[@]}'"
 exec openvpn ${ARGS[@]} ${USER_ARGS[@]}
+
+}
+
+
+supervisord_init(){
+echo "exec funct ${FUNCNAME}"
+if [[ ! -d "/etc/supervisor.d/" ]];then
+    mkdir -p /etc/supervisor.d/
+fi
+cat <<OEF> /etc/supervisor.d/openvpn.ini
+[supervisord]
+nodaemon=true
+
+[program:openvpn]
+command=/usr/sbin/openvpn ${ARGS[@]} ${USER_ARGS[@]}
+autostart=true
+autorestart=true
+stdout_logfile=/dev/stdout
+stdout_logfile_maxbytes=0
+stderr_logfile=/dev/stderr
+stderr_logfile_maxbytes=0
+startretries=140
+stopwaitsecs=10
+user=root
+priority=50
+OEF
+
+if [[ "${SERVICE_DNSMASQ}" == "true" ]];then
+cat <<OEF> /etc/supervisor.d/dnsmasq.ini
+[supervisord]
+nodaemon=true
+
+[program:dnsmasq]
+command=/usr/sbin/dnsmasq --no-daemon
+autostart=true
+autorestart=true
+stdout_logfile=/dev/stdout
+stdout_logfile_maxbytes=0
+stderr_logfile=/dev/stderr
+stderr_logfile_maxbytes=0
+startretries=140
+stopwaitsecs=10
+priority=999
+user=root
+OEF
+DNSMASQ_LISTEN_INTERFACE_DEFAULT=$(cat /etc/openvpn/openvpn.conf  | grep '^dev.*tun.*' |  awk '{print $2}')
+echo "" > /etc/dnsmasq.conf
+echo "listen-address=${DNSMASQ_LISTEN_ADDRESS:-0.0.0.0}" >> /etc/dnsmasq.conf
+echo "interface=${DNSMASQ_LISTEN_INTERFACE:-${DNSMASQ_LISTEN_INTERFACE_DEFAULT}}" >> /etc/dnsmasq.conf
+echo "user=${DNSMASQ_RUN_USER:-root}" >> /etc/dnsmasq.conf
+echo "server=${DNSMASQ_DNS_SERVER:-8.8.8.8}" >> /etc/dnsmasq.conf
+echo "conf-dir=/etc/dnsmasq.d/,*.conf" >> /etc/dnsmasq.conf
+fi
+
+
+}
+
+
+
+supervisor_start(){
+    echo "exec funct ${FUNCNAME}"
+    /usr/bin/supervisord -c /etc/supervisord.conf
+}
+
+
+supervisord_init
+supervisor_start

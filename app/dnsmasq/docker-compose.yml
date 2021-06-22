@@ -1,0 +1,9 @@
+version: '2'
+services:
+  dnsmasq:
+    image: registry.gitlab.com/devops_containers/dockers/dnsmasq:2.80-alpine-v1.0.0
+    build: 
+      context: build/dnsmasq/.
+      args:
+        IMAGE_TAG: "alpine:3.12"
+    container_name: dnsmasq
