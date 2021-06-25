@@ -1,0 +1,9 @@
+version: '2'
+services:
+  timescale13:
+    image: devsadds/timescaledb:2.3.0-pg13
+    build:
+      context: build/timescale13/.
+      args:
+        DOCKER_BASE_IMAGE: "timescale/timescaledb:2.3.0-pg13"
+    container_name: timescale13

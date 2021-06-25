@@ -13,7 +13,7 @@ RUN . /opt/bitnami/scripts/libcomponent.sh && component_unpack "ini-file" "1.3.0
 RUN . /opt/bitnami/scripts/libcomponent.sh && component_unpack "mysql" "8.0.25-0" --checksum ac2aa9081eb14b51a897da6250a534e680c59bf472a3b46d59fa09a6e1f5baca
 RUN . /opt/bitnami/scripts/libcomponent.sh && component_unpack "gosu" "1.13.0-0" --checksum fd7257c2736164d02832dbf72e2c1ed9d875bf3e32f0988520796bc503330129
 RUN chmod g+rwX /opt/bitnami
-RUN mkdir /docker-entrypoint-initdb.d /docker-info.d
+RUN mkdir /docker-entrypoint-initdb.d /docker-scripts.d
 
 COPY rootfs /
 RUN /opt/bitnami/scripts/mysql/postunpack.sh
@@ -23,22 +23,24 @@ ENV BITNAMI_APP_NAME="mysql" \
 ARG CONSUL_VERSION
 COPY files/bashrc_alias.sh /usr/sbin/bashrc_alias.sh
 COPY files/initbash_profile.sh /usr/sbin/initbash_profile
-COPY files/consul_agent.sh /docker-info.d/consul_agent.sh
+COPY files/consul_agent.sh /docker-scripts.d/consul_agent.sh
 RUN apt-get update && apt install -y \
         libnet-ifconfig-wrapper-perl/stable \
         wget unzip nano \
-    && chmod +x   /usr/sbin/bashrc_alias.sh /usr/sbin/initbash_profile /docker-info.d/consul_agent.sh \
+    && chmod +x   /usr/sbin/bashrc_alias.sh /usr/sbin/initbash_profile /docker-scripts.d/consul_agent.sh \
     &&  /bin/bash -C "/usr/sbin/initbash_profile" \
     && VERSION_MYSQL=$(mysqld --version | grep version | awk '{print $3}') \
-    && echo "VERSION_MYSQL=${VERSION_MYSQL}" >> /docker-info.d/build.info \
+    && echo "VERSION_MYSQL=${VERSION_MYSQL}" >> /docker-scripts.d/build.info \
     && wget https://releases.hashicorp.com/consul/${CONSUL_VERSION:-1.9.6}/consul_${CONSUL_VERSION:-1.9.6}_linux_amd64.zip  \
     && unzip -d /bin consul_${CONSUL_VERSION:-1.9.6}_linux_amd64.zip \
     && rm consul_${CONSUL_VERSION:-1.9.6}_linux_amd64.zip \
     && apt remove -y unzip wget \
     && ln -sf /opt/bitnami/mariadb/bin/mysqldump /usr/bin/mysqldump \
-    && sed -i '/mysql-env.sh.*/a \\bash /docker-info.d/consul_agent.sh' /opt/bitnami/scripts/mysql/entrypoint.sh \
+    && sed -i '/mysql-env.sh.*/a \\bash /docker-scripts.d/consul_agent.sh' /opt/bitnami/scripts/mysql/entrypoint.sh \
     && cat /opt/bitnami/scripts/mysql/entrypoint.sh
-
+RUN  mkdir -p /consul_agent && chmod 777 -R /tmp  /consul_agent -v \
+    && ln -sf /dev/stdout /var/log/mysql_error.log \
+    && chown -h 1001:1001 /var/log/mysql_error.log
 EXPOSE 3306
 
 USER 1001

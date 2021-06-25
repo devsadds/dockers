@@ -1,11 +1,11 @@
 version: '3.5'
 services:
   nginx:
-    image: "devsadds/nginx:1.21.0-alpine-libressl-v1.1.0"
+    image: "devsadds/nginx:1.20.1-alpine-libressl-v1.2.2"
     build: 
       context: build/nginx/.
       args:
-        APP_VERSION: "1.21.0"
+        APP_VERSION: "1.20.1"
         BASE_IMAGE: "alpine:3.12.1"
         BUILD_DATE: "$BUILD_DATE"
         BUIL_ARG_1: "http2"

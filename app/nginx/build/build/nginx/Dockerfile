@@ -99,8 +99,13 @@ RUN \
  #&& cd $COMPILE_DIR/$VERSION_NGINX && patch -p1 < $COMPILE_DIR/nginx_http_upstream_check_module/check_1.16.1+.patch \
  && cd $COMPILE_DIR/$VERSION_NGINX && ./configure \
  ${additional_params} \
---with-cc-opt='-O2 -g -pipe -Wall -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector-strong --param=ssp-buffer-size=4 -grecord-gcc-switches -m64 -mtune=generic -DTCP_FASTOPEN=23' \
---with-ld-opt='-Wl,-z,relro -Wl,-E' \
+ --with-ld-opt="-lrt"  \
+ --with-cc-opt='-g -O2 -fstack-protector-strong -Wformat -Werror=format-security -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector-strong --param=ssp-buffer-size=4 -grecord-gcc-switches -m64 -mtune=generic -DTCP_FASTOPEN=23' \
+ --with-ld-opt='-Wl,-z,relro -Wl,-E' \
+#--with-ld-opt="-lrt"  \
+#--with-cc-opt='-g -O2 -fstack-protector-strong -Wformat -Werror=format-security -Wp,-D_FORTIFY_SOURCE=2' \
+#--with-ld-opt='-Wl,-Bsymbolic-functions -Wl,-z,relro -Wl,--as-needed' \
+
 --sbin-path=/usr/sbin/nginx \
 --conf-path=/etc/nginx/nginx.conf \
 --error-log-path=/var/log/nginx/error.log \

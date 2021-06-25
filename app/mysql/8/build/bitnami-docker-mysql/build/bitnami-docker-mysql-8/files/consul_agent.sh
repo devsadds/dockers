@@ -1,6 +1,9 @@
-export ipaddr=$(ifconfig "${SERVER_INTERFACE_BIND:-eth0}" | grep 'inet' | awk '{print $2}')
-export hostname=$(hostname)
-export tags="[$tags]"
+#!/bin/bash
+ipaddr=$(ifconfig "${SERVER_INTERFACE_BIND:-eth0}" | grep 'inet' | awk '{print $2}')
+hostname=$(hostname)
+tags=$(echo "{ \"service\": \"${SERVER_NAME:-db}\" }")
+tags="[$tags]"
+
 progress-bar() {
   local duration=${1}
 
@@ -17,27 +20,35 @@ progress-bar() {
   done
   clean_line
 }
+
 func_consul_agent_start(){
   echo "Begin func ${FUNCNAME[0]}" 
-  echo "{ \"services\": [ { \"name\": \"${CONSUL_SERVICE:-mysql-8}\", \"address\": \"$ipaddr\", \"port\": 3306, \"Tags\": $tags, \"checks\": [ { \"name\": \"check if mysql port is open\", \"tcp\": \"$ipaddr:3306\", \"interval\": \"10s\", \"timeout\": \"5s\" } ] } ] }" > /tmp/mysql.json
+  echo "{ \"services\": [ { \"name\": \"${CONSUL_SERVICE:-mysql-8}\", \"address\": \"$ipaddr\", \"port\": 3306,  \"checks\": [ { \"name\": \"check if mysql port is open\", \"tcp\": \"$ipaddr:3306\", \"interval\": \"10s\", \"timeout\": \"5s\" } ] } ] }" > ${CONSUL_AGENT_DIR:-/consul_agent}/mysql.json
 
   sleep 1;
-  echo "show /tmp/mysql.json"
+  echo "show ${CONSUL_AGENT_DIR:-/consul_agent}/mysql.json"
   echo "------------------------------------"
-  cat /tmp/mysql.json
+  cat ${CONSUL_AGENT_DIR:-/consul_agent}/mysql.json
   echo "------------------------------------"
 # Starting consul client
   echo "------------------------------------"
-  echo "exec /bin/consul agent -retry-join $DISCOVERY_SERVICE -client 0.0.0.0 -bind $ipaddr -node ${SERVER_NAME:-db}-${hostname} -data-dir /tmp -config-format json -config-file /tmp/mysql.json &"
+  echo "exec /bin/consul agent -retry-join $DISCOVERY_SERVICE -client 0.0.0.0 -bind $ipaddr -node ${SERVER_NAME:-db}-${hostname} -data-dir ${CONSUL_AGENT_DIR:-/consul_agent} -config-format json -config-file ${CONSUL_AGENT_DIR:-/consul_agent}/mysql.json &"
   echo "------------------------------------"
   echo "Sleep for ${CONSUL_AGENT_SLEEP_TIME:-5s} seconds after agent start" && progress-bar ${CONSUL_AGENT_SLEEP_TIME:-5s}
-  if [[ $(ps aux | grep "consul.*agent" | grep -ve 'grep') == "" ]];then
-      /bin/consul agent -retry-join $DISCOVERY_SERVICE -client 0.0.0.0 -bind $ipaddr -node ${SERVER_NAME:-db}-${hostname} -data-dir /tmp -config-file /tmp/mysql.json 2>&1 & disown;
+  if [[ $(ps aux | grep "consul.*agent" | grep -ve 'grep\|consul_agent') == "" ]];then
+      echo "Start consul agent"
+      /bin/consul agent -retry-join $DISCOVERY_SERVICE -client 0.0.0.0 -bind $ipaddr -node ${SERVER_NAME:-db}-${hostname} -data-dir ${CONSUL_AGENT_DIR:-/consul_agent} -config-file ${CONSUL_AGENT_DIR:-/consul_agent}/mysql.json 2>&1 & disown;
       echo "Sleep for ${CONSUL_AGENT_SLEEP_TIME:-5s} seconds after agent start" && progress-bar ${CONSUL_AGENT_SLEEP_TIME:-5s}
   else
-      echo "consul agent already running"
+      echo "consul agent already running Status=$(ps aux | grep "consul.*agent" | grep -ve 'grep')"
   fi
 
   echo "End func ${FUNCNAME[0]}" 
 }
-func_consul_agent_start
+
+
+main(){
+  func_consul_agent_start
+}
+
+main

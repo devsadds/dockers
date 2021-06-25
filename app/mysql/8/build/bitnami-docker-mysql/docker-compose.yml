@@ -1,7 +1,7 @@
 version: '2'
 services:
   bitnami-docker-mysql-8:
-    image: registry.gitlab.com/devops_containers/dockers/bitnami-docker-mysql-8:v1.1.1
+    image: registry.gitlab.com/devops_containers/dockers/bitnami-docker-mysql-8:v1.2.0
     build: 
       context: build/bitnami-docker-mysql-8/.
       args:
