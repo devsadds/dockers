@@ -25,8 +25,6 @@ RUN apk --update --no-cache add \
         file \
         pkgconf
 
-ARG PGBOUNCER_VERSION
-
 RUN curl -Lso  "/tmp/pgbouncer.tar.gz" "https://pgbouncer.github.io/downloads/files/${PGBOUNCER_VERSION}/pgbouncer-${PGBOUNCER_VERSION}.tar.gz" && \
         file "/tmp/pgbouncer.tar.gz"
 
@@ -53,6 +51,8 @@ RUN apk --update --no-cache add \
         supervisor \
         py3-pip \
         curl \
+        bash \
+        nano \
         && apk add --no-cache --virtual .build-deps gcc python3-dev musl-dev postgresql-dev  \
         && pip3 install prometheus-pgbouncer-exporter \
         && mkdir /opt/consul-template \
@@ -67,7 +67,10 @@ RUN apk --update --no-cache add \
 WORKDIR /etc/pgbouncer
 WORKDIR /var/log/pgbouncer
 
-RUN chown -R postgres:root \
+RUN  addgroup -g 1001 -S postgres \
+    && adduser -u 1001 -D -S -G postgres postgres \
+    && getent passwd \
+    && chown -R postgres:root \
         /etc/pgbouncer \
         /var/log/pgbouncer
 

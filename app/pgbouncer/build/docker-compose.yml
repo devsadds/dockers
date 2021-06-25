@@ -1,11 +1,11 @@
 version: '2'
 services:
   pgbouncer:
-    image: devsadds/pgbouncer:1.15.0-consul-v.1.0.0
+    image: devsadds/pgbouncer:1.15.0-consul-v1.0.0
     build: 
       context: build/pgbouncer/.
       args:
-        BASE_IMAGE: "alpine:3.9"
+        BASE_IMAGE: "alpine:3.13"
         APP_VERSION: "1.15.0"
         CONSUL_VERSION: "1.9.3"
         CONSUL_TEMPLATE_VERSION: "0.25.2"

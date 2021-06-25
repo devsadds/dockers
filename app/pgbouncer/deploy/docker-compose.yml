@@ -13,53 +13,40 @@ x-logging-json:
     max-size: '100m'
     max-file: '5'
 
-x-deploy:
-  &haproxy-deploy
-  mode: global
-  #replicas: 1
-  endpoint_mode: dnsrr
-  restart_policy:
-    condition: on-failure
-    delay: 10s
-    max_attempts: 40
-    window: 10s
-  update_config:
-    parallelism: 1
-    delay: 5s
-    failure_action: rollback
-    monitor: 25s
-    max_failure_ratio: 0.3
-    order: stop-first
-  placement:
-    constraints: [ node.labels.pgbouncer  == true ]
-
 
 services:
-  haproxy:
-    image: devsadds/pgbouncer:1.15.0-v.1.0.0
+  pgbouncer:
+    image: devsadds/pgbouncer:1.15.0-consul-v1.0.0
+    ports:
+      - 6432:6432
     environment:
+        #
         DOCKER_ROLE: "pgbouncer"
+        #
+        DATABASES_HOST: "10.50.0.10"
+        DATABASES_PORT: "5432"
+        DATABASES_USER: "smssender"
+        DATABASES_PASSWORD: "smssender"
+        DATABASES_DBNAME: "smssender"
+        #
+        DATABASES_POOL_SIZE: "20"
+        DATABASES_RESERVE_POOL: "10"
+        #DATABASES_CONNECT_QUERY: ""
+        DATABASES_POOL_MODE: "transaction"
+        DATABASES_MAX_DB_CONNECTIONS: "100"
+        DATABASES_CLIENT_ENCODING: "UNICODE"
+        DATABASES_DATESTYLE: "iso"
+        #DATABASES_TIMEZONE: ""
+        #DATABASES_CONNECT_QUERY: "SELECT 1"
+        #
+        PGBOUNCER_LISTEN_ADDR: "0.0.0.0"
+        PGBOUNCER_LISTEN_PORT: "6432"
+        PGBOUNCER_LOGFILE: "/tmp/pg.log"
+        PGBOUNCER_MAX_CLIENT_CONN: "3000"
+        PGBOUNCER_DEFAULT_POOL_SIZE: "20"
+        #
         DISCOVERY_SERVICE: "consul"
         DISCOVERY_SERVICE_HOST: "consul"
         DISCOVERY_SERVICE_NAME: "pgbouncer"
-        HAPROXY_STATS_URL: "/"
-        HAPROXY_STATS_AUTH_USER: "user"
-        HAPROXY_STATS_AUTH_PASSWORD: "password"
-        HAPROXY_STATS_ALLOW_HOSTS: "192.168.0.0/12 10.0.0.0/8 172.16.0.0/12 127.0.0.1/32"
-        HAPROXY_SERVICE_ALLOW_HOSTS: "192.168.0.0/12 10.0.0.0/8 172.16.0.0/12 127.0.0.1/32"
-        SERVER_NAME: "haproxy"
-        HAPROXY_MYSQL_CHECK_USER: "hpclustercheckuser"
-        HAPROXY_MYSQL_BACKEND_MAX_CONN: "200"
-        SERVER_INTERFACE_BIND: "ethwe0"
-    networks:
-      pxc_percona_net:
-    deploy:
-      <<: *haproxy-deploy
 
 
-networks:
-  pxc_percona_net:
-    external: true
-    driver: weaveworks/net-plugin:2.8.1
-    ipam:
-      driver: default

@@ -1,7 +1,7 @@
 #!/bin/sh
 set -e
 
-PG_CONFIG_DIR=/etc/pgbouncer
+PG_CONFIG_DIR="${PG_CONFIG_DIR:-/etc/pgbouncer}"
 
 invoke_main(){
     check_variables
@@ -62,7 +62,7 @@ $(create_databases_config)
 ${PGBOUNCER_LOGFILE:+logfile = ${PGBOUNCER_LOGFILE}${nl}}\
 ${PGBOUNCER_PIDFILE:+pidfile = ${PGBOUNCER_PIDFILE}${nl}}\
 listen_addr = ${PGBOUNCER_LISTEN_ADDR:-0.0.0.0}
-${PGBOUNCER_LISTEN_PORT:+listen_port = ${PGBOUNCER_LISTEN_PORT}${nl}}\
+${PGBOUNCER_LISTEN_PORT:+listen_port = ${PGBOUNCER_LISTEN_PORT:-6432}${nl}}\
 ${PGBOUNCER_UNIX_SOCKET_DIR:+unix_socket_dir = ${PGBOUNCER_UNIX_SOCKET_DIR}${nl}}\
 ${PGBOUNCER_UNIX_SOCKET_MODE:+unix_socket_mode = ${PGBOUNCER_UNIX_SOCKET_MODE}${nl}}\
 ${PGBOUNCER_UNIX_SOCKET_GROUP:+unix_socket_group = ${PGBOUNCER_UNIX_SOCKET_GROUP}${nl}}\
