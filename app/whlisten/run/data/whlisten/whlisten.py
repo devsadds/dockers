@@ -203,15 +203,19 @@ def block_method():
     ip = request.headers['Remote-Addr']
     m_http_host = request.headers['Host'].split(":", 1)
     m_http_host = m_http_host[0]
-    print("---Debug equest.headers---")
+    print("---Debug request.headers---")
     print(request.headers)
     print("---Debug equest.headers---")
-    print("---ip_addr_v4_whitelist---")
+    print("------request---")
+    print(request)
+    print("------request---")
+
     #print(str(ip_addr_v4_whitelist))
     #print("---ip_addr_v4_whitelist---")
     ###
     rule = request.url_rule
-
+    print('rule')
+    print(rule)
     ###if '/api/sms/healthcheck/front' in rule.rule:
         ###print('Healthcheck only')
     ###else:
