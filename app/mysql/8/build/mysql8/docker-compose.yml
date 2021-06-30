@@ -1,0 +1,13 @@
+version: '2'
+services:
+  mysql-server:
+    image: registry.gitlab.com/devops_containers/dockers/mysql-server:8.0.25-1.2.3-server
+    build: 
+      context: build/mysql-server/.
+      args:
+        IMAGE_TAG: "mysql/mysql-server:8.0.25-1.2.3-server"
+        CONSUL_VERSION: "1.9.6"
+    container_name: mysql-server
+
+
+

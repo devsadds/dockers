@@ -1,0 +1,16 @@
+stages:
+  #- build
+  - release
+
+variables:
+    DOCKER_BUILD_VERSION: '18.06.3-ce'
+    d_image_semantic: "registry.gitlab.com/devops_containers/dockers/semantic-release:node-14.15.1-buster-slim-v17.4.0"
+    SEMANTIC_RELEASE_PACKAGE: "semantic-release"
+
+release:
+  stage: release
+  image: $d_image_semantic
+  script:
+    - semantic-release
+  only:
+    - master

@@ -1,0 +1,28 @@
+{
+  "branches": ["master", "+([0-9])?(.{+([0-9]),x}).x", "dev"],
+  "debug": "True",
+  "plugins": [
+    ["@semantic-release/commit-analyzer", {
+      "preset": "angular",
+      "releaseRules": [
+        {"type": "patch", "release": "patch"},
+        {"type": "style", "release": "patch"},
+        {"type": "refactor", "release": "patch"}
+      ],
+      "parserOpts": {
+        "noteKeywords": ["BREAKING CHANGE", "BREAKING CHANGES"]
+      }
+    }],
+    ["@semantic-release/release-notes-generator",{
+      "dryRun": "false",
+    }],
+    ["@semantic-release/gitlab", {
+      "dryRun": "false",
+    }],
+    ["@semantic-release/exec", {
+      "verifyConditionsCmd": "./verify.sh",
+      "publishCmd": "./publish.sh ${nextRelease.version} ${options.branch} ${commits.length} ${Date.now()}"
+    }],
+    "semantic-release-slack-bot"
+  ]
+}
