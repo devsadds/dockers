@@ -206,9 +206,9 @@ def block_method():
     print("---Debug request.headers---")
     print(request.headers)
     print("---Debug equest.headers---")
-    print("------request---")
-    print(request)
-    print("------request---")
+    print("------request.data---")
+    print(request.data)
+    print("------request.data---")
 
     #print(str(ip_addr_v4_whitelist))
     #print("---ip_addr_v4_whitelist---")
@@ -276,9 +276,9 @@ def main_route():
     #    status=int(r_data['r_code']),
     #    response=r_data['r_text']
     #)
-    response.headers
+    #response.headers
     print("-------------------------------" + " R_END " + "-------------------------------")
-    return response 
+    return r_data 
 
     
 if __name__ == '__main__':
