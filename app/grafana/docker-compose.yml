@@ -1,11 +1,11 @@
 version: '2'
 services:
   grafana:
-    image: registry.gitlab.com/devops_containers/dockers/grafana:8.0.3-ubuntu
+    image: registry.gitlab.com/devops_containers/dockers/grafana:8.0.4-ubuntu
     build: 
       context: build/grafana/.
       args:
         APP_VERSION: "0.2.4"
-        BASE_IMAGE: "grafana/grafana:8.0.3-ubuntu"
+        BASE_IMAGE: "grafana/grafana:8.0.4-ubuntu"
         RUN_USER: "human"
     container_name: grafana

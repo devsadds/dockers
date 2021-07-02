@@ -3,9 +3,9 @@ version: '3.8'
 services:
 
   semantic-release:
-    image: registry.gitlab.com/devops_containers/dockers/semantic-release:node-14.15.1-buster-slim-v17.4.2
+    image: registry.gitlab.com/devops_containers/dockers/semantic-release:node-14.17.1-buster-slim-v17.4.2
     build: 
       context: build/semantic-release/.
       args:
-        BASE_IMAGE : "node:14.15.1-buster-slim"
+        BASE_IMAGE : "node:14.17.1-buster-slim"
 

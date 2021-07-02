@@ -1,0 +1,11 @@
+version: '2'
+services:
+  percona-xtrabackup:
+    image: registry.gitlab.com/devops_containers/dockers/percona-xtrabackup:8.0.25-17
+    build: 
+      context: build/percona-xtrabackup/.
+      args:
+        IMAGE_TAG: "perconalab/percona-xtrabackup:8.0.25-17"
+    container_name: percona-xtrabackup
+
+

@@ -8,6 +8,7 @@ exporter_node_url_default="172.30.0.11:9100"
 exporter_cadvisor_url_default="172.30.0.12:8080"
 exporter_mysql_url_default="172.30.0.13:9104"
 exporter_postgresql_url_default="172.30.0.14:9187"
+exporter_pgbouncer_url_default="172.30.0.15:9127"
 exporter_heplify_server_url_default="heplify-server:9096"
 
 
@@ -113,6 +114,25 @@ OEF
 
 fi
 }
+
+config_exporter_pgbouncer(){
+
+if [[ ! -f "/etc/nginx/services.d/exporter_pgbouncer.conf" ]];then
+  
+  cat <<OEF> /etc/nginx/services.d/exporter_pgbouncer.conf
+  server {
+  listen 9127;
+  
+  location / {
+    include exporters-access.conf;
+    proxy_pass   http://${EXPORTER_pgbouncer_URL:-$exporter_pgbouncer_url_default}/;
+  }
+
+}
+OEF
+
+fi
+
 config_exporter_heplify_server(){
 
 	if [[ ! -f "/etc/nginx/services.d/exporter_heplify_server.conf" ]];then
@@ -155,6 +175,7 @@ main(){
 	config_exporter_cadvisor
   config_exporter_mysql
   config_exporter_postgresql
+  config_exporter_pgbouncer
 	config_exporter_heplify_server
 	nginx_run
 }

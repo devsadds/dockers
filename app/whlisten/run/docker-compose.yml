@@ -14,6 +14,10 @@ services:
         mode: host      
     environment:
       HTTP_HOST_INCOMING: "whlisten.linux2be.com"
+      TELEGTAM_BOT_TOKEN: "1801387352:AAEtqO2MRDXbqW6iB225T5HKJtmjBYNvh74"
+      TELEGRAM_CHANNEL_ID: "-1001451426980"
+
+    restart: always
     entrypoint: tail -f /dev/null
 
 
