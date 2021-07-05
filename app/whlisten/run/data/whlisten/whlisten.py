@@ -173,7 +173,8 @@ def save_request(uuid, request):
         print(f"{request.args=}")
     elif req_data['method'] == "POST" and req_data['Content-Type'] != "application/json":
         req_data['args'] = request.args
-        req_data['data_plain'] = request.form     
+        req_data['data_plain'] = request.form
+    print("SAVE_R")
     return req_data
 
 def save_response(uuid, resp):
@@ -194,43 +195,21 @@ def before_request():
 
 @app.before_request
 def block_method():
-    #db_data = getfromDb_whlisten_db()
-    #ip_addr_v4_whitelist = []
-    #for row in db_data:
-    #    ip_addr_v4_white = IPv4Address(int(row[0]))
-    #    ip_addr_v4_whitelist.append(ip_addr_v4_white)
-    #ip = request.environ.get('REMOTE_ADDR')
     ip = request.headers['Remote-Addr']
     m_http_host = request.headers['Host'].split(":", 1)
     m_http_host = m_http_host[0]
-    print("---Debug request.headers---")
-    print(request.headers)
-    print("---Debug equest.headers---")
-    print("------request.data---")
-    print(request.data)
-    print("------request.data---")
 
-    #print(str(ip_addr_v4_whitelist))
-    #print("---ip_addr_v4_whitelist---")
-    ###
-    rule = request.url_rule
-    print('rule')
-    print(rule)
-    ###if '/api/sms/healthcheck/front' in rule.rule:
-        ###print('Healthcheck only')
-    ###else:
-        ###if ipaddress.ip_address(ip) in ip_addr_v4_whitelist:
-            ###print("Accepted connection from " + ip)
-        ###else:
-            ###print("Forbidden connection from " + ip)
-            ###abort(403, 'Forbidden')
-        ###if m_http_host in HTTP_HOST_INCOMING:
-            ###print("Request for host " + m_http_host + " accepted" + " from ip " + ip )
-        ###else:
-            ###print("Request for host " + m_http_host + " not allowed" + " from ip " + ip )
-            ###print("Allowed hosts is = " + HTTP_HOST_INCOMING )
-            ###abort(404)
-
+    ##print("---------------------------------------------------------Debug request.headers------------------------------")
+    ##print(request.headers)
+    ##print("---------------------------------------------------------Debug request.headers------------------------------")
+##
+    ##print("---------------------------------------------------------Debug request.get_json-----------------------------")
+    ##print(request.get_json(force = True))
+    ##print("---------------------------------------------------------Debug request.get_json-----------------------------")
+##
+    ##print("---------------------------------------------------------Debug request.full_path-----------------------------")
+    ##print(request.full_path)
+    ##print("---------------------------------------------------------Debug request.full_path-----------------------------")
 
 @app.after_request
 def after_request(resp):
@@ -238,15 +217,38 @@ def after_request(resp):
     resp.headers.add('Access-Control-Allow-Headers', 'Content-Type, X-Token, X-Auth')
     resp.headers.add('Access-Control-Allow-Methods', 'GET, POST')
     resp_data = save_response(g.uuid, resp)
-
     return resp
+
+@app.route('/', methods=['GET', 'POST'])
 
 @app.route('/api/sms/healthcheck/front', methods=['GET', 'POST'])
 def web_healthcheck():
     data = {'message': 'online', 'status': 'healhy'}
     return make_response(jsonify(data), 200)
 
-@app.route('/', methods=['GET', 'POST'])
+
+@app.route('/gitlab', methods=['GET', 'POST'])
+def get_hooks_gitlab():
+    print(request.full_path)
+    print(request.get_json(force = True))
+    print("r_full_path= %(r_full_path)s request_data %(r_data)s \
+        " % {"r_full_path": request.full_path, "r_data": request.get_json(force = True)} )
+    #print("ci_action= %(ci_action)s project_name %(project_name)s \
+    #    with app_version %(app_version)s" % {"project_name": project_name, "app_version": app_version, "ci_action": ci_action} )
+
+    data = {'route': '/hooks'}
+    return make_response(jsonify(data), 200)
+
+
+
+@app.route("/hooks/<slack_token_p1>/<slack_token_p2>", methods=['GET', 'POST'])
+def get_hooks_slack(slack_token_p1,slack_token_p2):
+    slack_token = slack_token_p1 + '/' + slack_token_p2
+    print(str(slack_token))
+    return "The slack_token is " + str(slack_token)
+    data = {'route': '/hooks', 'slack_token': slack_token}
+    return make_response(jsonify(data), 200)
+
 
 def main_route():
     print("-------------------------------" + " R_START " + "-------------------------------")
@@ -258,6 +260,17 @@ def main_route():
     print("HTTP_HOST_INCOMING = " + HTTP_HOST_INCOMING)
     print("HTTP_HOST_OUTGOING = " + HTTP_HOST_OUTGOING)
     print("HTTP_Content_Type = " + str(req_data['Content-Type']))
+
+    print("BEGIN-------------------------------req_data.data---------------------------")
+    print("route = " + str(req_data['endpoint']))
+    print(req_data)
+    print("END-------------------------------req_data.data---------------------------")
+
+    try:
+        if req_data['method'] == "POST"  and req_data['Content-Type'] == "application/json" and req_data['headers']['X-Gitlab-Token'] is not None:
+            print("APP=GITLAB")
+        if 'hook' in req_data['endpoint'] and req_data['Content-Type'] == "application/x-www-form-urlencoded":
+            print("APP=SLACK")
 
     ###if req_data['method'] == "POST" and req_data['Content-Type'] == "application/json":
         ###print("resend " + " Content-Type " + str(req_data['Content-Type']) + " to host " + HTTP_HOST_OUTGOING )
@@ -277,6 +290,9 @@ def main_route():
     #    response=r_data['r_text']
     #)
     #response.headers
+        
+    except NameError:
+        message = "Error"
     print("-------------------------------" + " R_END " + "-------------------------------")
     return r_data 
 

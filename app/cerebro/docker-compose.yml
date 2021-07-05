@@ -1,0 +1,11 @@
+version: '2'
+services:
+  cerebro:
+    image: registry.gitlab.com/devops_containers/dockers/cerebro:0.9.4
+    build: 
+      context: build/cerebro/.
+      args:
+        BASE_IMAGE: "openjdk:11.0.11-jre-slim-buster"
+        APP_VERSION: "0.9.4"
+    #entrypoint: tail -f /dev/null
+    container_name: cerebro

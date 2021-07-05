@@ -1,7 +1,7 @@
 version: '3.5'
 services:
   nginx:
-    image: "devsadds/nginx:1.20.1-alpine-libressl-http-1-1-v1.2.2"
+    image: "registry.gitlab.com/devops_containers/dockers/nginx:1.20.1-alpine-libressl-http-1-1-v1.2.2"
     build: 
       context: build/nginx/.
       args:

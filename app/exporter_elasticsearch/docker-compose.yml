@@ -1,0 +1,10 @@
+version: '2'
+services:
+  exporter_elasticsearch:
+    image: registry.gitlab.com/devops_containers/dockers/exporter_elasticsearch:v1.2.1
+    build: 
+      context: build/exporter_elasticsearch/.
+      args:
+        IMAGE_TAG: "quay.io/prometheuscommunity/elasticsearch-exporter:v1.2.1"
+        APP_VERSION: "1.2.1"
+    container_name: exporter_elasticsearch
