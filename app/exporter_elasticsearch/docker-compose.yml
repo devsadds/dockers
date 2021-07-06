@@ -1,7 +1,7 @@
 version: '2'
 services:
   exporter_elasticsearch:
-    image: registry.gitlab.com/devops_containers/dockers/exporter_elasticsearch:v1.2.1
+    image: registry.gitlab.com/devops_containers/dockers/exporter_elasticsearch:1.2.1
     build: 
       context: build/exporter_elasticsearch/.
       args:

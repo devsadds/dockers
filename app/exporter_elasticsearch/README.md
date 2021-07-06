@@ -8,6 +8,8 @@
       WEB_LISTEN_ADDRESS: ":9114"
       ES_SNAPSHOTS: "true"
       ES_SHARDS: "true"
+      ES_CLUSTER_SETTINGS: "true"
+      ES_INDICES_SETTINGS
     #ports:
     #- "127.0.0.1:9114:9114"
     networks:

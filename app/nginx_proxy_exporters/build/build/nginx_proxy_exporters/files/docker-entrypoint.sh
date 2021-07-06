@@ -9,6 +9,7 @@ exporter_cadvisor_url_default="172.30.0.12:8080"
 exporter_mysql_url_default="172.30.0.13:9104"
 exporter_postgresql_url_default="172.30.0.14:9187"
 exporter_pgbouncer_url_default="172.30.0.15:9127"
+exporter_elasticsearch_url_default="172.30.0.16:9114"
 exporter_heplify_server_url_default="heplify-server:9096"
 
 
@@ -133,11 +134,29 @@ OEF
 
 fi
 
+config_exporter_elasticsearch(){
+
+if [[ ! -f "/etc/nginx/services.d/exporter_elasticsearch.conf" ]];then
+  
+  cat <<OEF> /etc/nginx/services.d/exporter_elasticsearch.conf
+  server {
+  listen 9114;
+  
+  location / {
+    include exporters-access.conf;
+    proxy_pass   http://${EXPORTER_ELASTICSEARCH_URL:-$exporter_elasticsearch_url_default}/;
+  }
+
+}
+OEF
+
+fi
+}
+
 config_exporter_heplify_server(){
 
 	if [[ ! -f "/etc/nginx/services.d/exporter_heplify_server.conf" ]];then
-
-exporter_check_code=$(curl -s -o /dev/null -w "%{http_code}" "${EXPORTER_HEPLIFY_SERVER_URL:-$exporter_heplify_server_url_default}")
+    exporter_check_code=$(curl -s -o /dev/null -w "%{http_code}" "${EXPORTER_HEPLIFY_SERVER_URL:-$exporter_heplify_server_url_default}")
 
 if [[ "${exporter_check_code}" != "000" ]];then
 
@@ -177,6 +196,7 @@ main(){
   config_exporter_postgresql
   config_exporter_pgbouncer
 	config_exporter_heplify_server
+  config_exporter_elasticsearch
 	nginx_run
 }
 

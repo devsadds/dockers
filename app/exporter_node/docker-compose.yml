@@ -1,0 +1,10 @@
+version: '2'
+services:
+  exporter_node:
+    image: registry.gitlab.com/devops_containers/dockers/exporter_node:1.1.2
+    build: 
+      context: build/exporter_node/.
+      args:
+        IMAGE_TAG: "bitnami/node-exporter:1.1.2-debian-10-r104"
+        APP_VERSION: "1.1.2"
+    container_name: exporter_node

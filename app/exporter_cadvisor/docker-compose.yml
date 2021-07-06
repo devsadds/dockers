@@ -1,0 +1,10 @@
+version: '2'
+services:
+  exporter_cadvisor:
+    image: registry.gitlab.com/devops_containers/dockers/exporter_cadvisor:0.33.0
+    build: 
+      context: build/exporter_cadvisor/.
+      args:
+        IMAGE_TAG: "google/cadvisor:v0.33.0"
+        APP_VERSION: "0.33.0"
+    container_name: exporter_cadvisor
