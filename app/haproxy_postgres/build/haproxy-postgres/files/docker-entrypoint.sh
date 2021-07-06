@@ -209,10 +209,8 @@ logfile=/dev/null
 
 
 [program:haproxy]
-command=/usr/local/sbin/haproxy  -f /etc/haproxy/haproxy.conf
-exitcodes=0,2
-stopsignal=QUIT
-stopwaitsecs=2
+command=/usr/local/sbin/haproxy  -f /etc/haproxy/haproxy.conf -p ${HAPROXY_PID:-/tmp/haproxy.pid}
+stopwaitsecs=3
 stopasgroup=false
 killasgroup=false
 autostart=true
@@ -252,10 +250,6 @@ startretries=100
 OEF
 }
 
-d_harpoxy(){
-	/usr/local/sbin/haproxy  -f /etc/haproxy/haproxy.conf  -p /usr/share/haproxy/haproxy.pid & export pid_run=$(/usr/share/haproxy/haproxy.pid ) &&  echo "Haproxy started. Pid ${pid_run}"
-}
-
 
 supervisord_run(){
 	${exec_prefix} /usr/bin/supervisord -c /etc/supervisor/supervisord.conf
@@ -263,7 +257,6 @@ supervisord_run(){
 main(){
 	prepare
 	s_consul_agent
-	#d_harpoxy
 	s_consul_template
 	s_exporter_haproxy
 	s_harpoxy

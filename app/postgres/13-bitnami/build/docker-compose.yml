@@ -1,7 +1,7 @@
 version: '2'
 services:
   postgres13:
-    image: devsadds/postgresql:13.3.0-debian-10-r31
+    image: registry.gitlab.com/devops_containers/dockers/postgresql:13.3.0-debian-10-r31
     build:
       context: build/postgres13-bitnami/.
       args:

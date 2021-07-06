@@ -2,7 +2,7 @@
 PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 
 
-CHECK_HOST="http://localhost:80"
+CHECK_HOST="http://127.0.0.1:80"
 CHECK_PATH="/"
 CHECK_STRING="front"
 

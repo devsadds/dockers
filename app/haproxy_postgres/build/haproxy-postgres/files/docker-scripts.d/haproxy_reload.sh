@@ -7,8 +7,16 @@ service_reload_haproxy(){
 	    pids_haproxy=$(ps aux | grep '/etc/haproxy/haproxy.conf' | grep -ve 'grep\|consul\|template' | grep 'Sl' | awk '{print $2}')
 	    sup_haproxy_status=$(supervisorctl -c /etc/supervisor/supervisord.conf status haproxy | awk '{ print $2}' )
 	    if [[ "${sup_haproxy_status}" == "RUNNING" ]];then
-	    	kill -s TERM $(ps aux | grep 'haproxy.conf' | grep -ve 'color' | grep Ssl | awk '{ print $2}')
-	        supervisorctl -c /etc/supervisor/supervisord.conf restart haproxy
+	        supervisorctl -c /etc/supervisor/supervisord.conf stop haproxy;
+	        local haproxy_pids=$(ps aux | grep 'haproxy.conf' | grep -ve 'color' | awk '{print $2}')
+	        if [[ ! -z $haproxy_pids ]];then
+	            for haproxy_pid in $haproxy_pids
+	            do
+	            	echo "Kill process with pid $haproxy_pid"
+	        	    kill -9 $haproxy_pid
+done
+	            supervisorctl -c /etc/supervisor/supervisord.conf start haproxy;
+	        fi
 	    else
 	    	echo "sup_haproxy_status=$sup_haproxy_status. Skip supervisorctl -c /etc/supervisor/supervisord.conf restart haproxy"
 	    	sleep 1;

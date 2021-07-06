@@ -1,0 +1,71 @@
+version: "3.8"
+
+x-logging:
+  &rsyslog-logging
+  driver: syslog
+  options:
+    syslog-address: "udp://127.0.0.1:515"
+
+x-logging-json:
+  &json-logging
+  driver: json-file
+  options:
+    max-size: '100m'
+    max-file: '5'
+
+x-deploy:
+  &rabbitmq-deploy
+  #mode: global
+  replicas: 1
+  #endpoint_mode: dnsrr
+  restart_policy:
+    condition: on-failure
+    delay: 10s
+    max_attempts: 40
+    window: 10s
+  update_config:
+    parallelism: 1
+    delay: 5s
+    failure_action: rollback
+    monitor: 25s
+    max_failure_ratio: 0.3
+    order: stop-first
+  placement:
+    constraints: [ node.labels.rabbitmq == true ]
+
+services:
+  rabbitmq:
+    image: "${DOCKER_IMAGE_RABBITMQ}"
+    hostname: "{{.Service.Name}}.{{.Task.Slot}}.{{.Task.ID}}"
+    ports:
+      - "5672:5672"   # amqp
+      - "15672:15672" # web ui
+    volumes:
+      - rabbitmq-1:/bitnami
+    environment:
+        DOCKER_ROLE: "${DOCKER_ROLE}"
+        DISCOVERY_SERVICE: "${DISCOVERY_SERVICE}"
+        #
+        RABBITMQ_VHOST: "${RABBITMQ_VHOST}"
+        RABBITMQ_USERNAME: "${RABBITMQ_USERNAME}"
+        RABBITMQ_PASSWORD: "${RABBITMQ_PASSWORD}"
+        RABBITMQ_NODE_NAME: "${RABBITMQ_NODE_NAME}"
+        RABBITMQ_USE_LONGNAME: "true"
+        RABBITMQ_NODE_PORT_NUMBER: "5672"
+        RABBITMQ_PLUGINS: "${RABBITMQ_PLUGINS}"
+        RABBITMQ_VM_MEMORY_HIGH_WATERMARK: "${RABBITMQ_VM_MEMORY_HIGH_WATERMARK}"
+        #RABBITMQ_DISK_FREE_RELATIVE_LIMIT: "${RABBITMQ_DISK_FREE_RELATIVE_LIMIT}"
+        RABBITMQ_ULIMIT_NOFILES: "${RABBITMQ_ULIMIT_NOFILES}"
+    networks:
+      pxc_percona_net:
+    deploy:
+      <<: *rabbitmq-deploy
+
+volumes:
+  rabbitmq-1:
+
+
+networks:
+  pxc_percona_net:
+    external: ${DOCKER_NETWORK_EXTERNAL_RABBITMQ}
+    driver: ${DOCKER_NETWORK_DRIVER_RABBITMQ}

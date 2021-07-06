@@ -3,7 +3,7 @@ version: '3.8'
 services:
 
   haproxy:
-    image: devsadds/haproxy-mysql:2.4.1_consul_v1.0.2
+    image: registry.gitlab.com/devops_containers/dockers/haproxy-mysql:2.4.1_consul_v1.1.0
     build: 
       context: build/haproxy-mysql/.
       args:

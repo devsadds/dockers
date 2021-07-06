@@ -1,0 +1,10 @@
+version: '2'
+services:
+  rabbitmq:
+    image: registry.gitlab.com/devops_containers/dockers/rabbitmq:3.8.19
+    build: 
+      context: build/rabbitmq/.
+      args:
+        BASE_IMAGE: "docker.io/bitnami/minideb:buster"
+        APP_VERSION: "3.8.19"
+    container_name: rabbitmq
