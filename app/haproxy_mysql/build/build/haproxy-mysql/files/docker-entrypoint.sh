@@ -43,7 +43,7 @@ global
 	##log to stderr
 	#log fd@1 format raw  local0 ${HAPROXY_LOG_LEVEL:-info}
 	log stdout  format raw  local0  ${HAPROXY_LOG_LEVEL:-info}
-	maxconn ${HAPROXY_OPT_MAXCONN:-500}
+	maxconn ${HAPROXY_OPT_MAXCONN:-2000}
 	chroot /usr/share/haproxy
 	pidfile  /usr/share/haproxy/haproxy.pid
 	user ${haproxy_user}
@@ -65,7 +65,7 @@ defaults
 	option dontlognull
 	retries 3
 	option redispatch
-	maxconn ${HAPROXY_OPT_MAXCONN:-500}
+	maxconn ${HAPROXY_OPT_MAXCONN:-2000}
     timeout client  ${HAPROXY_TIMEOUT_CLIENT:-10800s}
     timeout server  ${HAPROXY_TIMEOUT_SERVER:-440s}
     timeout connect ${HAPROXY_TIMEOUT_CONNECT:-440s}

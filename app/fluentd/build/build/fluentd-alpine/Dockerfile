@@ -45,6 +45,7 @@ RUN apk update \
         && gem install bigdecimal \
         && gem install typhoeus \
         && gem install geoip2_compat \
+        && gem install strptime \
 && gem install fluentd -v ${FLUENTD_VERSION} \
         && for FLUENTD_MODULE in $(echo ${FLUENTD_MODULES} | tr ","  " ");do \
           echo "Install fluentd module ${FLUENTD_MODULE}" && gem install ${FLUENTD_MODULE}; \
@@ -59,7 +60,7 @@ RUN apk update \
        echo ''; \
        echo ''; \
        echo '[program:fluentd]'; \
-       echo 'command=fluentd -c /etc/fluentd/fluent.conf -p /etc/fluentd/plugins'; \
+       echo 'command=fluentd -c /etc/fluentd/fluent.conf --verbose'; \
        echo 'autostart=true'; \
        echo 'autorestart=unexpected'; \
        echo 'stdout_logfile=/proc/self/fd/2'; \

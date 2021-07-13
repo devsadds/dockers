@@ -10,6 +10,7 @@ exporter_mysql_url_default="172.30.0.13:9104"
 exporter_postgresql_url_default="172.30.0.14:9187"
 exporter_pgbouncer_url_default="172.30.0.15:9127"
 exporter_elasticsearch_url_default="172.30.0.16:9114"
+exporter_rabbitmq_url_default="172.30.0.17:9419"
 exporter_heplify_server_url_default="heplify-server:9096"
 
 
@@ -126,7 +127,7 @@ if [[ ! -f "/etc/nginx/services.d/exporter_pgbouncer.conf" ]];then
 	
 	location / {
 		include exporters-access.conf;
-		proxy_pass   http://${EXPORTER_pgbouncer_URL:-$exporter_pgbouncer_url_default}/;
+		proxy_pass   http://${EXPORTER_PGBOUNCER_URL:-$exporter_pgbouncer_url_default}/;
 	}
 
 }
@@ -146,6 +147,25 @@ if [[ ! -f "/etc/nginx/services.d/exporter_elasticsearch.conf" ]];then
 	location / {
 		include exporters-access.conf;
 		proxy_pass   http://${EXPORTER_ELASTICSEARCH_URL:-$exporter_elasticsearch_url_default}/;
+	}
+
+}
+OEF
+
+fi
+}
+
+config_exporter_rabbitmq(){
+
+if [[ ! -f "/etc/nginx/services.d/exporter_rabbitmq.conf" ]];then
+	
+	cat <<OEF> /etc/nginx/services.d/exporter_rabbitmq.conf
+	server {
+	listen 9419;
+	
+	location / {
+		include exporters-access.conf;
+		proxy_pass   http://${EXPORTER_RABBITMQ_URL:-$exporter_rabbitmq_url_default}/;
 	}
 
 }
@@ -198,6 +218,7 @@ main(){
 	config_exporter_pgbouncer
 	config_exporter_heplify_server
 	config_exporter_elasticsearch
+	config_exporter_rabbitmq
 	nginx_run
 }
 

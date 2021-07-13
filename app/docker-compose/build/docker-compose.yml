@@ -3,11 +3,11 @@ version: '3.8'
 services:
 
   docker-compose:
-    image: registry.gitlab.com/devops_containers/dockers/docker-compose:1.28.6
+    image: registry.gitlab.com/devops_containers/dockers/docker-compose:1.29.2
     build: 
       context: build/docker-compose/.
       args:
-        IMAGE_BASE: "docker/compose:alpine-1.28.6"
-        IMAGE_TAG: "1.28.6"
+        IMAGE_BASE: "docker/compose:alpine-1.29.2"
+        IMAGE_TAG: "1.29.2"
         IMAGE_NAME: "docker-compose"
         IMAGE_MAINTAINER: "a.v.galushko86@gmail.com"

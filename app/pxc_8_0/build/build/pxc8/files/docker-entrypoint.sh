@@ -550,7 +550,7 @@ set -e
 if [[ -d "${DATADIR:-/var/lib/mysql}/sst-xb-tmpdir" ]];then
   rm -rf ${DATADIR:-/var/lib/mysql}/sst-xb-tmpdir
 fi     
-mysqld --user=mysql  --log-error-verbosity=2 --wsrep-cluster-name=$CLUSTER_NAME --wsrep-cluster-address="gcomm://$cluster_join" --wsrep-sst-method=xtrabackup-v2  --wsrep-node-address="$ipaddr"  --wsrep-log-conflicts --pxc-encrypt-cluster-traffic=OFF --log-error=${MYSQL_ERROR_LOG_DIR}/error.log $CMDARG
+mysqld --user=mysql  --log-error-verbosity=2 --wsrep-cluster-name=$CLUSTER_NAME --wsrep-cluster-address="gcomm://$cluster_join" --wsrep-sst-method=xtrabackup-v2  --wsrep-node-address="$ipaddr"  --wsrep-log-conflicts --pxc-encrypt-cluster-traffic=OFF  $CMDARG
 OEF
   chmod +x  /tmp/script_run_pxc8.sh
   /bin/cat <<OEF> /etc/supervisor/conf.d/pxc-8-0.conf

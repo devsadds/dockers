@@ -1,7 +1,7 @@
 version: '2'
 services:
   pxc8:
-    image: devsadds/pxc:8.0.22_consul_bionic-v1.0.1
+    image: devsadds/pxc:8.0.23_consul_bionic-v1.0.0
     build:
       context: build/pxc8/.
       args:

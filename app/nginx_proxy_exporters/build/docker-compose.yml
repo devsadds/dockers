@@ -1,11 +1,11 @@
 version: '2'
 services:
   nginx_proxy_exporters:
-    image: registry.gitlab.com/devops_containers/dockers/nginx_proxy_exporters:1.1.4
+    image: registry.gitlab.com/devops_containers/dockers/nginx_proxy_exporters:1.1.5
     build: 
       context: build/nginx_proxy_exporters/.
       args:
-        BASE_IMAGE: "nginx:1.21.0-alpine"
-        APP_VERSION: "1.1.4"
+        BASE_IMAGE: "nginx:1.21.1-alpine"
+        APP_VERSION: "1.1.5"
 
 

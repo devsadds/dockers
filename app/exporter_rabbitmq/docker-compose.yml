@@ -1,0 +1,10 @@
+version: '2'
+services:
+  exporter_rabbitmq:
+    image: registry.gitlab.com/devops_containers/dockers/exporter_rabbitmq:1.0.0-RC8
+    build: 
+      context: build/exporter_rabbitmq/.
+      args:
+        IMAGE_TAG: "kbudde/rabbitmq-exporter:v1.0.0-RC8"
+        APP_VERSION: "1.0.0-RC8"
+    container_name: exporter_rabbitmq

@@ -30,7 +30,8 @@ RUN apk add --no-cache  \
     		libffi-dev \
     		openssl-dev \
     && pip3 install "pip>=20" \
-    && pip3 install --no-cache-dir ${PIP_REQUIREMENTS} ansible==${ANSIBLE_VERSION} ansible-lint==${ANSIBLE_LINT_VERSION}  \
+    && pip3 install --no-cache-dir ${PIP_REQUIREMENTS} \
+    && apk add ansible \
  	&& apk del .build-deps \
  	&& rm -rf /var/cache/apk/* /root/.cargo
 ARG RUN_USER
@@ -48,5 +49,5 @@ Host *\n\
  && chown -R -v ${RUN_USER}:${RUN_USER} /etc/ansible \
  && chmod 4755 /bin/busybox \
  && chown -R -v root:root /root
-
+RUN ansible --version
 WORKDIR /etc/ansible

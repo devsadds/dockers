@@ -1,0 +1,10 @@
+version: '2'
+services:
+  exporter_blackbox:
+    image: registry.gitlab.com/devops_containers/dockers/exporter_blackbox:0.19.0
+    build: 
+      context: build/exporter_blackbox/.
+      args:
+        IMAGE_TAG: "prom/blackbox-exporter:v0.19.0"
+        APP_VERSION: "0.19.0"
+    container_name: exporter_blackbox

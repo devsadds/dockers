@@ -1,0 +1,15 @@
+version: '3.2'
+
+services:
+  dnsmasq:
+    image: "registry.gitlab.com/devops_containers/dockers/dnsmasq:latest"
+    restart: always
+    hostname: 'dnsmasq'
+    volumes:
+      - "./configs/dnsmasq/dnsmasq.d:/etc/dnsmasq/conf.d"
+    ports:
+      - 10.47.0.17:53:53/udp
+    stdin_open: true
+    tty: true
+    cap_add:
+     - NET_ADMIN
