@@ -1,0 +1,10 @@
+version: '2'
+services:
+  exporter_nginx:
+    image: registry.gitlab.com/devops_containers/dockers/exporter_nginx:0.9.0
+    build: 
+      context: build/exporter_nginx/.
+      args:
+        IMAGE_TAG: "nginx/nginx-prometheus-exporter:0.9.0"
+        APP_VERSION: "0.9.0"
+    container_name: exporter_nginx

@@ -1,0 +1,10 @@
+version: '2'
+services:
+  exporter_nginx_vts:
+    image: registry.gitlab.com/devops_containers/dockers/exporter_nginx_vts:0.10.7
+    build: 
+      context: build/exporter_nginx_vts/.
+      args:
+        IMAGE_TAG: "sophos/nginx-vts-exporter:latest"
+        APP_VERSION: "0.10.7"
+    container_name: exporter_nginx_vts
