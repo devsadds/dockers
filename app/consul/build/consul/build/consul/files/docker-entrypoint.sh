@@ -96,12 +96,15 @@ else
     "dns": 8600
   },
   "autopilot": {
-    "cleanup_dead_servers": ${CONSUL_CLEANUP_DEAD_SERVERS:-true},
-    "last_contact_threshold": "1s",
-    "max_trailing_logs": 500
-  },
-  "disable_update_check": true,
-  "log_level": "${CONSUL_SERVER_LOG_LEVEL:-warn}"
+  	"cleanup_dead_servers": ${CONSUL_CLEANUP_DEAD_SERVERS:-true},
+  	"last_contact_threshold": "1s",
+  	"max_trailing_logs": 500
+  	},
+  	"disable_update_check": true,
+  	"log_level": "${CONSUL_SERVER_LOG_LEVEL:-warn}",
+  	"connect": {"
+  	"enabled": true
+  }
 }
 
 OEF

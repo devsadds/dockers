@@ -1,5 +1,5 @@
 ARG BASE_IMAGE
-FROM $BASE_IMAGE
+FROM ${BASE_IMAGE}
 ENV NODEJS_VERSION=14.17.1-r0 NPM_VERSION=7.17.0-r0 YARN_VERSION=1.22.10-r0
 ENV PHP_EXT_VER_SWOOLE_ASYNC=v4.5.5 PHP_EXT_VER_SWOOLE=v4.6.6 PHP_EXT_VER_APCU_BC=1.0.5 PHP_EXT_VER_APCU=5.1.20 PHP_EXT_VER_REDIS=5.3.4 PHP_EXT_VER_IMAGICK=3.4.4 IMAGICK_COMMIT=448c1cd0d58ba2838b9b6dff71c9b7e70a401b90
 ENV PHP_EXTS \
@@ -67,6 +67,7 @@ RUN \
         krb5-dev \
         jq \
         nodejs=$NODEJS_VERSION npm=$NPM_VERSION yarn=$YARN_VERSION \
+&& apk add --no-cache -X http://dl-cdn.alpinelinux.org/alpine/edge/testing  p0f \
 && echo "https://dl-cdn.alpinelinux.org/alpine/edge/testing" >> /etc/apk/repositories \
 && apk add --no-cache \
         imagemagick \
@@ -137,9 +138,23 @@ RUN \
     && docker-php-ext-install -j$(nproc) swoole \
     && docker-php-source delete \
     && apk del .build-deps \
-    && rm -rf /usr/src/php/ext/* /tmp/*
+    && rm -rf /usr/src/php/ext/* /tmp/* /usr/src/*
 
-
+ENV CONSUL_VERSION 1.10.1
+ENV CONSUL_TEMPLATE_VERSION 0.25.2
+RUN echo "Install consul" \
+	&& if [[ ! -d "/opt/hashicop" ]];then mkdir /opt/hashicop;fi \
+	&& curl -L  https://releases.hashicorp.com/consul/${CONSUL_VERSION}/consul_${CONSUL_VERSION}_linux_amd64.zip  -o /tmp/consul_${CONSUL_VERSION}_linux_amd64.zip \
+ 	&& curl -L https://releases.hashicorp.com/consul-template/${CONSUL_TEMPLATE_VERSION}/consul-template_${CONSUL_TEMPLATE_VERSION}_linux_amd64.zip  -o /tmp/consul-template_${CONSUL_TEMPLATE_VERSION}_linux_amd64.zip \
+ 	&& unzip  /tmp/consul_${CONSUL_VERSION}_linux_amd64.zip -d /opt/hashicop \
+ 	&& unzip /tmp/consul-template_${CONSUL_TEMPLATE_VERSION}_linux_amd64.zip -d /opt/hashicop \
+ 	&& chmod +x  /opt/hashicop/* -v \
+ 	&& rm -rv /tmp/consul*.zip \
+ 	&& ln -s /opt/hashicop/consul-template /usr/local/bin/consul-template \
+ 	&& ln -s /opt/hashicop/consul /usr/local/bin/consul \
+ 	&& consul-template -v \
+ 	&& consul -v \
+ 	&& mkdir -p /var/log/consul
 RUN echo "Load extensions" \
     && ln -sfn /usr/local/lib/php/extensions/no-debug-non-zts-20200930/swoole.so /usr/local/lib/php/extensions/no-debug-non-zts-20200930/swoole \
     && echo "extension=imagick.so" > /usr/local/etc/php/conf.d/docker-php-ext-imagick.ini \
@@ -182,7 +197,7 @@ RUN \
         echo 'allow_url_fopen = On'; \
         echo 'short_open_tag = On'; \
         echo 'post_max_size = 200M'; \
-        echo 'memory_limit = 5000M'; \
+        echo 'memory_limit = 8000M'; \
         echo 'file_uploads = On'; \
         echo 'max_input_vars = 2000'; \
         echo 'max_execution_time = 280'; \
@@ -204,18 +219,18 @@ RUN \
         echo 'listen.group = www-data'; \
         echo 'listen = 9000'; \
         echo 'pm = dynamic'; \
-        echo 'pm.max_children = 50'; \
-        echo 'pm.start_servers = 10'; \
-        echo 'pm.min_spare_servers = 10'; \
-        echo 'pm.max_spare_servers = 40'; \
+        echo 'pm.max_children = 30'; \
+        echo 'pm.start_servers = 19'; \
+        echo 'pm.min_spare_servers = 19'; \
+        echo 'pm.max_spare_servers = 20'; \
         echo 'pm.max_requests = 400'; \
         echo 'rlimit_files    = 131072'; \
         echo 'rlimit_core   = unlimited'; \
         echo 'clear_env = no'; \
         echo 'php_admin_flag[short_open_tag] = on'; \
-        echo ';php_admin_value[date.timezone] = Europe/Moscow'; \
-        echo 'php_value[memory_limit] = 5560M'; \
-        echo 'php_admin_value[memory_limit] = 5560M'; \
+        echo 'php_admin_value[date.timezone] = UTC'; \
+        echo 'php_value[memory_limit] = 7560M'; \
+        echo 'php_admin_value[memory_limit] = 7560M'; \
         echo 'php_value[max_file_uploads] = 550'; \
         echo 'php_value[upload_max_filesize] = 100M'; \
         echo 'php_value[post_max_size] = 100M'; \
@@ -237,22 +252,20 @@ RUN \
           } | tee /usr/local/etc/php-fpm.conf \
        && cd /usr/local/etc/php-fpm.d/ \
        && rm docker.conf  www.conf.default  zz-docker.conf 
-
-ADD files/* /usr/sbin/
-RUN chmod +x /usr/sbin/initbash_profile /usr/sbin/docker-entrypoint.sh  \
-  && ln -s /usr/sbin/docker-entrypoint.sh /docker-entrypoint.sh \
-  && /bin/bash -C "/usr/sbin/initbash_profile" \
-  && mkdir -p /var/run /var/run/nginx  /var/www \
-  && mkdir -p /var/lib/nginx/body /var/tmp/nginx/fastcgi \
-  && chown -R www-data:www-data /var/lib/nginx \
-  && chown -R www-data:www-data /var/tmp/nginx \
-  && chown -R nobody.nobody /var/log/nginx \
-  && rm -r /usr/src/* \
-  && php -r 'print_r(gd_info());' \
-  && php -i | grep imap \
-  && yarn --version \
-  && node --version \
-  && npm --version
-  EXPOSE 80  
-  WORKDIR /var/www/
-  ENTRYPOINT ["/docker-entrypoint.sh"]
+ARG DOCKER_IMAGE_VERSION
+ENV DOCKER_IMAGE_VERSION $DOCKER_IMAGE_VERSION
+ADD ./files/docker-entrypoint.sh /docker-entrypoint.sh
+ADD ./files/initbash_profile.sh /usr/sbin/initbash_profile
+ADD ./files/bashrc_alias.sh /usr/sbin/bashrc_alias.sh
+RUN /bin/bash -C "/usr/sbin/initbash_profile" \
+    && mkdir -p /var/run /var/run/nginx  /var/www  /var/lib/nginx/body /var/tmp/nginx/fastcgi \
+    && chown -R www-data:www-data /var/lib/nginx  /var/tmp/nginx /var/log/nginx \
+    && php -r 'print_r(gd_info());' \
+    && php -i | grep imap \
+    && yarn --version \
+    && node --version \
+    && npm --version \
+    && chmod +x /docker-entrypoint.sh 
+EXPOSE 80  
+WORKDIR /var/www/
+ENTRYPOINT ["/docker-entrypoint.sh"]

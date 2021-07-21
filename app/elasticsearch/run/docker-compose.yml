@@ -1,0 +1,119 @@
+version: '3.7'
+services:
+  svc-elasticsearch-cluster:
+    image: registry.gitlab.com/devops_containers/dockers/elasticsearch:7.13.0
+    volumes:
+      - "/docker-compose/data/elasticsearch_7_13_0:/usr/share/elasticsearch/data"
+      #- "./configs/elasticsearch/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml"
+    ports:
+      - target: 9200 
+        published: 9200
+        protocol: tcp
+        mode: host
+    environment:
+      ES_JAVA_OPTS: "-Xms8024m -Xmx8024m"
+      node.name: "svc-elasticsearch-cluster"
+      cluster.name: "es-docker-cluster"
+      #discovery.seed_hosts: "es02,es03
+      cluster.initial_master_nodes: "svc-elasticsearch-cluster"
+      bootstrap.memory_lock: "false"
+      #network.host: "_eth0_"
+      network.host: "0.0.0.0"
+      xpack.security.enabled: "false"
+      xpack.monitoring.enabled: "false"
+      http.cors.allow-origin: "*"
+      http.cors.enabled: "true"
+
+    networks:
+      pxc_percona_net:
+        aliases:
+          - svc-elasticsearch-lb.es-standalone
+    ulimits:
+      nproc: 165535
+      memlock:
+        soft: -1
+        hard: -1
+    cap_add:
+      - ALL
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 2s
+        max_attempts: 40
+        window: 2s
+      update_config:
+        parallelism: 1
+        delay: 0s
+        failure_action: rollback
+        monitor: 8s
+        max_failure_ratio: 0.3
+        order: start-first
+      placement:
+        constraints: [ node.labels.logger3 == true ]
+
+
+
+  kibana:
+    image: registry.gitlab.com/devops_containers/dockers/kibana:7.13.0
+    environment:
+      ELASTICSEARCH_URL: http://svc-elasticsearch-lb.es-standalone:9200
+      ELASTICSEARCH_HOSTS: http://svc-elasticsearch-lb.es-standalone:9200
+      SERVER_NAME: kibana.services.linux2be.com
+    ports:
+      - target: 5601 
+        published: 5601
+        protocol: tcp
+        mode: host
+    networks:
+      pxc_percona_net:
+    ulimits:
+      nproc: 165535
+      memlock:
+        soft: -1
+        hard: -1
+    cap_add:
+      - ALL
+    deploy:
+      replicas: 1
+      update_config:
+        parallelism: 1
+        delay: 10s
+      restart_policy:
+        condition: on-failure
+        delay: 30s
+        max_attempts: 3
+        window: 120s
+
+
+  cerebro:
+    image: "registry.gitlab.com/devops_containers/dockers/cerebro:0.9.4"
+    environment:
+      CER_ES_URL: "http://svc-elasticsearch-lb.es-standalone:9200"
+      CER_ES_USER: "user1"
+      CER_ES_PASSWORD: "dsdsds"
+    ports:
+      - target: 9000 
+        published: 9000
+        protocol: tcp
+        mode: host
+    networks:
+      pxc_percona_net:
+    deploy:
+      replicas: 1
+      update_config:
+        parallelism: 1
+        delay: 10s
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 10s
+
+
+networks:
+  pxc_percona_net:
+    external: true
+    driver: overlay
+
+
+

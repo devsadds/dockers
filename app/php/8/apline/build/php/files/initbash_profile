@@ -1,3 +1,0 @@
-#!/usr/bin/env bash
-# add the bash aliases
-cat /usr/sbin/bashrc_alias.sh >> ~/.bashrc

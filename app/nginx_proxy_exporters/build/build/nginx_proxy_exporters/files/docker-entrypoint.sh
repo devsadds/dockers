@@ -11,6 +11,10 @@ exporter_postgresql_url_default="172.30.0.14:9187"
 exporter_pgbouncer_url_default="172.30.0.15:9127"
 exporter_elasticsearch_url_default="172.30.0.16:9114"
 exporter_rabbitmq_url_default="172.30.0.17:9419"
+exporter_haproxy_mysql_url_default="172.30.0.18:9101"
+exporter_haproxy_postgresql_url_default="172.30.0.19:9101"
+exporter_nginx_url_default="172.30.0.20:9113"
+exporter_nginx_vts_url_default="172.30.0.21:9913"
 exporter_heplify_server_url_default="heplify-server:9096"
 
 
@@ -174,12 +178,88 @@ OEF
 fi
 }
 
+config_exporter_haproxy_mysql(){
+
+if [[ ! -f "/etc/nginx/services.d/exporter_haproxy_mysql.conf" ]];then
+	
+	cat <<OEF> /etc/nginx/services.d/exporter_haproxy_mysql.conf
+	server {
+	listen 29101;
+	
+	location / {
+		include exporters-access.conf;
+		proxy_pass   http://${EXPORTER_HAPROXY_MYSQL_URL:-$exporter_haproxy_mysql_url_default}/;
+	}
+
+}
+OEF
+
+fi
+}
+
+config_exporter_haproxy_postgresql(){
+
+if [[ ! -f "/etc/nginx/services.d/exporter_haproxy_postgresql.conf" ]];then
+	
+	cat <<OEF> /etc/nginx/services.d/exporter_haproxy_postgresql.conf
+	server {
+	listen 29102;
+	
+	location / {
+		include exporters-access.conf;
+		proxy_pass   http://${EXPORTER_HAPROXY_POSTGRESQL_URL:-$exporter_haproxy_postgresql_url_default}/;
+	}
+
+}
+OEF
+
+fi
+}
+
+config_exporter_nginx(){
+
+if [[ ! -f "/etc/nginx/services.d/exporter_nginx.conf" ]];then
+	
+	cat <<OEF> /etc/nginx/services.d/exporter_nginx.conf
+	server {
+	listen 9113;
+	
+	location / {
+		include exporters-access.conf;
+		proxy_pass   http://${EXPORTER_NGINX_URL:-$exporter_nginx_url_default}/;
+	}
+
+}
+OEF
+
+fi
+}
+
+config_exporter_nginx_vts(){
+
+if [[ ! -f "/etc/nginx/services.d/exporter_nginx_vts.conf" ]];then
+	
+	cat <<OEF> /etc/nginx/services.d/exporter_nginx_vts.conf
+	server {
+	listen 9913;
+	
+	location / {
+		include exporters-access.conf;
+		proxy_pass   http://${EXPORTER_NGINX_VTS_URL:-$exporter_nginx_vts_url_default}/;
+	}
+
+}
+OEF
+
+fi
+}
+
+
 config_exporter_heplify_server(){
 
-	if [[ ! -f "/etc/nginx/services.d/exporter_heplify_server.conf" ]];then
-		exporter_check_code=$(curl -s -o /dev/null -w "%{http_code}" "${EXPORTER_HEPLIFY_SERVER_URL:-$exporter_heplify_server_url_default}")
-
-if [[ "${exporter_check_code}" != "000" ]];then
+if [[ ! -f "/etc/nginx/services.d/exporter_heplify_server.conf" ]];then
+	exporter_check_code=$(curl -s -o /dev/null -w "%{http_code}" "${EXPORTER_HEPLIFY_SERVER_URL:-$exporter_heplify_server_url_default}")
+    if [[ "${exporter_check_code}" != "000" ]];then
 
 cat <<OEF> /etc/nginx/services.d/exporter_heplify_server.conf
 server {
@@ -193,9 +273,9 @@ server {
 }
 
 OEF
-else
-	echo "Export url ${EXPORTER_HEPLIFY_SERVER_URL:-$exporter_heplify_server_url_default} not alloweded.Skip config create."
-fi
+    else
+	    echo "Export url ${EXPORTER_HEPLIFY_SERVER_URL:-$exporter_heplify_server_url_default} not alloweded.Skip config create."
+    fi
 	
 fi
 }
@@ -219,6 +299,10 @@ main(){
 	config_exporter_heplify_server
 	config_exporter_elasticsearch
 	config_exporter_rabbitmq
+	config_exporter_haproxy_mysql
+	config_exporter_haproxy_postgresql
+	config_exporter_nginx
+	config_exporter_nginx_vts
 	nginx_run
 }
 

@@ -3,11 +3,11 @@ version: '3.8'
 services:
 
   consul:
-    image: registry.gitlab.com/devops_containers/dockers/consul:1.9.5-v1.0.0
+    image: registry.gitlab.com/devops_containers/dockers/consul:1.10.0.1
     build: 
       context: build/consul/.
       args:
-        BASE_IMAGE : "consul:1.9.5"
+        BASE_IMAGE : "consul:1.10.0"
     healthcheck:
       test: ["CMD-SHELL", "consul info | awk '/health_score/{if ($$3 >=1) exit 1; else exit 0}'"]
       interval: 1m30s
