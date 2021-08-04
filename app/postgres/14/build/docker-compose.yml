@@ -1,0 +1,9 @@
+version: '2'
+services:
+  postgres14:
+    image: devsadds/postgres:14beta2-buster
+    build:
+      context: build/postgres14/.
+      args:
+        DOCKER_BASE_IMAGE: "postgres:14beta2-buster"
+    container_name: postgres14

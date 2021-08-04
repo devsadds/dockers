@@ -5,7 +5,7 @@ MAINTAINER a.v.galushko86@gmail.com
 ENV LANG en_US.UTF-8
 RUN apk add --no-cache openssh \
 		sshfs \
-		borgbackup=${APP_VERSION}-r1 \
+		borgbackup=${APP_VERSION} \
 		fuse-common  \
 		bash \
 		py-pip \

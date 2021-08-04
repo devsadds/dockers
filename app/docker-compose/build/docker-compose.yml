@@ -3,7 +3,7 @@ version: '3.8'
 services:
 
   docker-compose:
-    image: registry.gitlab.com/devops_containers/dockers/docker-compose:1.29.2
+    image: devsadds/docker-compose:1.29.2
     build: 
       context: build/docker-compose/.
       args:

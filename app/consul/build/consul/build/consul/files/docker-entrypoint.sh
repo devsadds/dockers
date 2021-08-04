@@ -101,10 +101,7 @@ else
   	"max_trailing_logs": 500
   	},
   	"disable_update_check": true,
-  	"log_level": "${CONSUL_SERVER_LOG_LEVEL:-warn}",
-  	"connect": {"
-  	"enabled": true
-  }
+  	"log_level": "${CONSUL_SERVER_LOG_LEVEL:-warn}"
 }
 
 OEF

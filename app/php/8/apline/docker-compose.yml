@@ -1,7 +1,7 @@
 version: '2'
 services:
   php:
-    image: registry.gitlab.com/devops_containers/dockers/php:8.0.8-fpm-alpine3.14
+    image: devsadds/php:8.0.8-fpm-alpine3.14
     build: 
       context: build/php/.
       args:

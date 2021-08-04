@@ -3,12 +3,12 @@ version: '3.3'
 services:
 
   runtime:
-    image: registry.gitlab.com/devops_containers/dockers/python:3.9.6-runtime-v1.1.0
+    image: registry.gitlab.com/devops_containers/dockers/python:3.9.6-runtime-v1.1.1
     build: 
       context: build/runtime/.
       args:
         BASE_IMAGE : "alpine:edge"
         APP_VERSION: "2.9.6"
-        PIP_REQUIREMENTS: "ipaddr ipaddress pika sentry-sdk pip cffi python-dateutil>=2.8.0 arrow>=0.14.3 jmespath  pyyaml  pycrypto pywinrm jmespath pyapi-gitlab psycopg2-binary netaddr demjson tornado>=6.0.3 requests>=2.18.4 jsontree>=0.5.1 threaded flask Flask-APScheduler Flask-HTTPAuth gunicorn blinker memorize gunicorn mysql-connector-python==8.0.11 PyMySQL"
+        PIP_REQUIREMENTS: "progress alive-progress ipaddr ipaddress pika sentry-sdk pip cffi python-dateutil>=2.8.0 arrow>=0.14.3 jmespath  pyyaml  pycrypto pywinrm jmespath pyapi-gitlab psycopg2-binary netaddr demjson tornado>=6.0.3 requests>=2.18.4 jsontree>=0.5.1 threaded flask Flask-APScheduler Flask-HTTPAuth gunicorn blinker memorize gunicorn mysql-connector-python==8.0.11 PyMySQL"
         RUN_USER: "runtime"
 

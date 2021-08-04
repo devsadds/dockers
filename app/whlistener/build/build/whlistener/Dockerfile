@@ -37,10 +37,6 @@ ENV BUILD_DEPS \
         libbz2-dev
 #RUN apt update \
 #	&& apt install -y  ${RUNTIME_DEPS}
-RUN \
-    useradd --create-home --uid=1001 --system   human \
-    #&& groupadd --gid=1001 --system human \
-    && usermod -aG human human
 #USER human
 ENV PYHTON_DEPS \
         ipaddr \
@@ -76,8 +72,8 @@ ENV PYHTON_DEPS \
 RUN pip3 install  ${PYHTON_DEPS}
 COPY files/docker-entrypoint.sh /docker-entrypoint.sh
 COPY files/app /app
-USER root
+#USER root
 RUN chmod +x /docker-entrypoint.sh
-USER human
+#USER human
 RUN python3.9 --version
 ENTRYPOINT ["/docker-entrypoint.sh"]

@@ -1,0 +1,10 @@
+version: '2'
+services:
+  whlistener:
+    image: devsadds/whlistener:0.1.0
+    build: 
+      context: build/whlistener/.
+      args:
+        BASE_IMAGE: "python:3.9.6-buster"
+        APP_VESION: "0.1.0"
+    container_name: whlistener
